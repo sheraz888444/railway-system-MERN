@@ -7,9 +7,14 @@ import {
   Settings,
   BookOpen,
   CreditCard,
-  Clock
+  Clock,
+  Ticket
 } from 'lucide-react';
 import { dashboardAPI } from '../services/api';
+import TicketBookingForm from './TicketBookingForm';
+import MyBookings from './MyBookings';
+import TrackTrain from './TrackTrain';
+import TrainSelector from './TrainSelector';
 
 
 interface DashboardProps {
@@ -26,6 +31,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
   const [selectedTrain, setSelectedTrain] = useState<any>(null);
   const [showMyBookings, setShowMyBookings] = useState(false);
   const [showTrackTrain, setShowTrackTrain] = useState(false);
+  const [showTrainSelector, setShowTrainSelector] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -191,13 +197,13 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
               )}
               {userRole === 'passenger' && (
                 <>
-                  <button
-                    onClick={() => setShowBookingForm(true)}
-                    className="flex items-center justify-center space-x-2 p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                  >
-                    <BookOpen className="h-5 w-5" />
-                    <span>Book Ticket</span>
-                  </button>
+              <button
+                onClick={() => setShowTrainSelector(true)}
+                className="flex items-center justify-center space-x-2 p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <BookOpen className="h-5 w-5" />
+                <span>Book Ticket</span>
+              </button>
                   <button
                     onClick={() => setShowMyBookings(true)}
                     className="flex items-center justify-center space-x-2 p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
@@ -238,6 +244,47 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
           </div>
         </div>
       </div>
+
+      {/* Modals for Passenger */}
+      {userRole === 'passenger' && (
+        <>
+          <TicketBookingForm
+            train={selectedTrain || {
+              id: '507f1f77bcf86cd799439011', // This will be replaced with actual train ID from database
+              name: 'Delhi Mumbai Express',
+              number: '12345',
+              from: 'Delhi',
+              to: 'Mumbai',
+              departureTime: '08:00',
+              arrivalTime: '20:00',
+              price: 500
+            }}
+            isOpen={showBookingForm}
+            onClose={() => setShowBookingForm(false)}
+          />
+          <MyBookings
+            isOpen={showMyBookings}
+            onClose={() => setShowMyBookings(false)}
+          />
+          <TrackTrain
+            isOpen={showTrackTrain}
+            onClose={() => setShowTrackTrain(false)}
+          />
+        </>
+      )}
+
+      {/* Train Selector Modal */}
+      {showTrainSelector && (
+        <TrainSelector
+          isOpen={showTrainSelector}
+          onClose={() => setShowTrainSelector(false)}
+          onSelectTrain={(train) => {
+            setSelectedTrain(train);
+            setShowTrainSelector(false);
+            setShowBookingForm(true);
+          }}
+        />
+      )}
     </div>
   );
 };

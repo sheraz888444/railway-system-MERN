@@ -38,8 +38,11 @@ router.post('/', [auth], [
 
     // Calculate total amount
     const totalAmount = passengers.reduce((sum, passenger) => {
-      const seat = train.seats.find(s => s.seatNumber === passenger.seatNumber);
-      return sum + (seat ? seat.price : 0);
+      const seat = train.seats?.find(s => s.seatNumber === passenger.seatNumber);
+      if (!seat) {
+        throw new Error(`Seat ${passenger.seatNumber} not found in train ${train.trainName}`);
+      }
+      return sum + seat.price;
     }, 0);
 
     const booking = new Booking({
