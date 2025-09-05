@@ -40,7 +40,13 @@ router.post('/', [auth], [
     const totalAmount = passengers.reduce((sum, passenger) => {
       const seat = train.seats?.find(s => s.seatNumber === passenger.seatNumber);
       if (!seat) {
-        throw new Error(`Seat ${passenger.seatNumber} not found in train ${train.trainName}`);
+        throw new Error(`Seat ${passenger.seatNumber} not found in train ${train.trainName}. Available seats: ${train.seats?.map(s => s.seatNumber).join(', ')}`);
+      }
+      if (seat.isBooked) {
+        throw new Error(`Seat ${passenger.seatNumber} is already booked`);
+      }
+      if (!seat.price || seat.price <= 0) {
+        throw new Error(`Invalid price for seat ${passenger.seatNumber}`);
       }
       return sum + seat.price;
     }, 0);

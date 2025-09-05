@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import Index from './pages/Index';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Dashboard from './components/Dashboard';
+import DashboardWrapper from './components/DashboardWrapper';
 
 const queryClient = new QueryClient();
 
@@ -22,9 +22,7 @@ const App = () => (
             <Route path="/abc" element={<Index />} />
             <Route path="/" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/dashboard/admin" element={<Dashboard userRole="admin" />} />
-            <Route path="/dashboard/passenger" element={<Dashboard userRole="passenger" />} />
-            <Route path="/dashboard/staff" element={<Dashboard userRole="staff" />} />
+            <Route path="/dashboard/*" element={<DashboardWrapper />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

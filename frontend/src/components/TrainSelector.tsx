@@ -39,6 +39,21 @@ const TrainSelector: React.FC<TrainSelectorProps> = ({ isOpen, onClose, onSelect
     destination: '',
     date: ''
   });
+  const [sourceSuggestions, setSourceSuggestions] = useState<string[]>([]);
+  const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
+  const [showSourceSuggestions, setShowSourceSuggestions] = useState(false);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
+
+  // Common Indian railway stations for autocomplete
+  const railwayStations = [
+    'Delhi', 'Mumbai', 'Chennai', 'Kolkata', 'Bangalore', 'Hyderabad', 'Pune', 'Ahmedabad',
+    'Jaipur', 'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Thane', 'Bhopal', 'Visakhapatnam',
+    'Patna', 'Vadodara', 'Ghaziabad', 'Ludhiana', 'Agra', 'Nashik', 'Faridabad', 'Meerut',
+    'Rajkot', 'Varanasi', 'Srinagar', 'Amritsar', 'Allahabad', 'Ranchi', 'Jabalpur', 'Gwalior',
+    'Vijayawada', 'Jodhpur', 'Madurai', 'Raipur', 'Kota', 'Guwahati', 'Chandigarh', 'Mysore',
+    'Bareilly', 'Aligarh', 'Moradabad', 'Gurgaon', 'Noida', 'Greater Noida', 'Ghaziabad',
+    'Faridabad', 'Gurugram', 'Sonipat', 'Panipat', 'Karnal', 'Ambala', 'Chandigarh', 'Shimla'
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -53,7 +68,12 @@ const TrainSelector: React.FC<TrainSelectorProps> = ({ isOpen, onClose, onSelect
   const fetchTrains = async () => {
     try {
       setLoading(true);
-      const data = await trainsAPI.getAllTrains();
+      // Pass search params to API for SEO and filtering
+      const data = await trainsAPI.getAllTrains({
+        source: searchParams.source,
+        destination: searchParams.destination,
+        date: searchParams.date,
+      });
       setTrains(data);
     } catch (error) {
       console.error('Failed to fetch trains:', error);
@@ -77,6 +97,20 @@ const TrainSelector: React.FC<TrainSelectorProps> = ({ isOpen, onClose, onSelect
       );
     }
 
+    // Add search by train name and number for better SEO
+    if (searchParams.source || searchParams.destination) {
+      // If searching by source/destination, also include trains that match by name/number
+      const searchTerm = (searchParams.source + ' ' + searchParams.destination).toLowerCase().trim();
+      if (searchTerm) {
+        filtered = filtered.filter(train =>
+          train.trainName.toLowerCase().includes(searchTerm) ||
+          train.trainNumber.toLowerCase().includes(searchTerm) ||
+          train.source.toLowerCase().includes(searchTerm) ||
+          train.destination.toLowerCase().includes(searchTerm)
+        );
+      }
+    }
+
     setFilteredTrains(filtered);
   };
 
@@ -85,8 +119,46 @@ const TrainSelector: React.FC<TrainSelectorProps> = ({ isOpen, onClose, onSelect
   };
 
   const handleSelectTrain = (train: TrainData) => {
-    onSelectTrain(train);
+    // Pass train with id field for consistency with TicketBookingForm
+    const trainWithId = { ...train, id: train._id };
+    onSelectTrain(trainWithId);
     onClose();
+  };
+
+  const handleSourceChange = (value: string) => {
+    setSearchParams(prev => ({ ...prev, source: value }));
+    if (value.length > 0) {
+      const filtered = railwayStations.filter(station =>
+        station.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5); // Limit to 5 suggestions
+      setSourceSuggestions(filtered);
+      setShowSourceSuggestions(true);
+    } else {
+      setShowSourceSuggestions(false);
+    }
+  };
+
+  const handleDestinationChange = (value: string) => {
+    setSearchParams(prev => ({ ...prev, destination: value }));
+    if (value.length > 0) {
+      const filtered = railwayStations.filter(station =>
+        station.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5); // Limit to 5 suggestions
+      setDestinationSuggestions(filtered);
+      setShowDestinationSuggestions(true);
+    } else {
+      setShowDestinationSuggestions(false);
+    }
+  };
+
+  const selectSourceSuggestion = (station: string) => {
+    setSearchParams(prev => ({ ...prev, source: station }));
+    setShowSourceSuggestions(false);
+  };
+
+  const selectDestinationSuggestion = (station: string) => {
+    setSearchParams(prev => ({ ...prev, destination: station }));
+    setShowDestinationSuggestions(false);
   };
 
   return (
@@ -99,23 +171,53 @@ const TrainSelector: React.FC<TrainSelectorProps> = ({ isOpen, onClose, onSelect
         <div className="space-y-6">
           {/* Search Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
+            <div className="relative">
               <Label htmlFor="source">From</Label>
               <Input
                 id="source"
                 placeholder="Source station"
                 value={searchParams.source}
-                onChange={(e) => setSearchParams(prev => ({ ...prev, source: e.target.value }))}
+                onChange={(e) => handleSourceChange(e.target.value)}
+                onFocus={() => searchParams.source && setShowSourceSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSourceSuggestions(false), 200)}
               />
+              {showSourceSuggestions && sourceSuggestions.length > 0 && (
+                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto">
+                  {sourceSuggestions.map((station, index) => (
+                    <div
+                      key={index}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => selectSourceSuggestion(station)}
+                    >
+                      {station}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div>
+            <div className="relative">
               <Label htmlFor="destination">To</Label>
               <Input
                 id="destination"
                 placeholder="Destination station"
                 value={searchParams.destination}
-                onChange={(e) => setSearchParams(prev => ({ ...prev, destination: e.target.value }))}
+                onChange={(e) => handleDestinationChange(e.target.value)}
+                onFocus={() => searchParams.destination && setShowDestinationSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowDestinationSuggestions(false), 200)}
               />
+              {showDestinationSuggestions && destinationSuggestions.length > 0 && (
+                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto">
+                  {destinationSuggestions.map((station, index) => (
+                    <div
+                      key={index}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => selectDestinationSuggestion(station)}
+                    >
+                      {station}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <Label htmlFor="date">Date</Label>

@@ -26,11 +26,17 @@ router.get('/admin', [auth, authorize('admin')], async (req, res) => {
     ]);
     const revenue = revenueAgg.length > 0 ? revenueAgg[0].totalRevenue : 0;
 
+    // Get registered trains with details
+    const registeredTrains = await Train.find({})
+      .select('trainNumber trainName source destination departureTime arrivalTime createdAt')
+      .sort({ createdAt: -1 });
+
     res.json({
       totalUsers,
       activeTrains,
       todayBookings,
-      revenue
+      revenue,
+      registeredTrains
     });
   } catch (error) {
     console.error(error);

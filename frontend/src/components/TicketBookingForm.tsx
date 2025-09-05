@@ -31,13 +31,17 @@ type BookingFormData = z.infer<typeof bookingSchema>;
 interface TicketBookingFormProps {
   train: {
     id: string;
-    name: string;
-    number: string;
-    from: string;
-    to: string;
+    name?: string;
+    number?: string;
+    trainName?: string;
+    trainNumber?: string;
+    from?: string;
+    to?: string;
+    source?: string;
+    destination?: string;
     departureTime: string;
     arrivalTime: string;
-    price: number;
+    price?: number;
   };
   isOpen: boolean;
   onClose: () => void;
@@ -58,7 +62,7 @@ const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, on
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-      trainId: train.id,
+      trainId: train.id || '',
       journeyDate: '',
       passengers: [{
         name: '',
@@ -80,8 +84,11 @@ const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, on
       setLoading(true);
       setError(null);
 
+      // Fix: Use train._id if available for booking
+      const trainIdToUse = (data.trainId && data.trainId.length === 24) ? data.trainId : (train.id || '');
+
       const bookingData = {
-        trainId: data.trainId,
+        trainId: trainIdToUse,
         passengers: data.passengers.map(p => ({
           name: p.name,
           age: p.age,
@@ -124,7 +131,7 @@ const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, on
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Book Ticket - {train.name} ({train.number})</DialogTitle>
+          <DialogTitle>Book Ticket - {train.trainName || train.name} ({train.trainNumber || train.number})</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -137,12 +144,12 @@ const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, on
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>From</Label>
-                  <p className="font-medium">{train.from}</p>
+                  <p className="font-medium">{train.source || train.from}</p>
                   <p className="text-sm text-gray-600">{train.departureTime}</p>
                 </div>
                 <div>
                   <Label>To</Label>
-                  <p className="font-medium">{train.to}</p>
+                  <p className="font-medium">{train.destination || train.to}</p>
                   <p className="text-sm text-gray-600">{train.arrivalTime}</p>
                 </div>
               </div>
@@ -281,7 +288,7 @@ const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, on
                         <Label htmlFor={`passengers.${index}.seatNumber`}>Seat Number</Label>
                         <Input
                           id={`passengers.${index}.seatNumber`}
-                          placeholder="e.g., 12A, 45B"
+                          placeholder="e.g., 1A, 2A, 5B"
                           {...register(`passengers.${index}.seatNumber`)}
                           className={errors.passengers?.[index]?.seatNumber ? 'border-red-500' : ''}
                         />

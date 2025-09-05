@@ -1,32 +1,14 @@
-# Ticket Booking Feature Implementation
+# Railway System Fixes
 
-## Backend
-- [x] Booking model exists with passengers, train, dates, amounts
-- [x] Booking routes exist: create, get my bookings, get by PNR, cancel
-- [x] API endpoints secured with auth middleware
+## Issues to Fix:
+1. **Search Bar Not Working**: Make search case-insensitive and include train name/number
+2. **Ticket Booking Error**: Fix prop mismatch between TrainSelector (_id) and TicketBookingForm (id)
+3. **Improve Search Functionality**: Add better search capabilities
 
-## Frontend
-- [ ] Install jsPDF for PDF generation
-- [ ] Create TicketBookingForm component
-  - [ ] Form fields: passenger details (name, age, gender, seat class)
-  - [ ] Train selection (preselected)
-  - [ ] Journey date picker
-  - [ ] Validation using react-hook-form and zod
-  - [ ] Submit to bookingsAPI.createBooking
-  - [ ] Handle success/error responses
-- [ ] Create TicketDetails page/component
-  - [ ] Display booking info: PNR, train details, passengers, journey date, amount
-  - [ ] Print button (window.print)
-  - [ ] Download PDF button (jsPDF)
-- [ ] Update TrainCard component
-  - [ ] Add onBook handler to open booking form
-- [ ] Add routing for TicketDetails page
-- [ ] Update Dashboard "Book Ticket" button
-- [ ] Test booking flow end-to-end
-
-## Testing
-- [ ] Test booking form submission
-- [ ] Test ticket details display
-- [ ] Test print functionality
-- [ ] Test PDF download
-- [ ] Test error handling
+## Tasks:
+- [ ] Update TrainSelector.tsx to make search case-insensitive
+- [ ] Add search by train name and train number in TrainSelector
+- [ ] Fix prop mismatch: Update TrainSelector to pass 'id' or update TicketBookingForm to use '_id'
+- [ ] Remove hardcoded train object in Dashboard.tsx
+- [ ] Test search functionality
+- [ ] Test ticket booking
