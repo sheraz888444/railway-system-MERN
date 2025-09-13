@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BarChart3,
   Users,
@@ -31,6 +32,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statsData, setStatsData] = useState<any>(null);
@@ -55,7 +57,16 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
     arrivalTime: '',
     duration: '',
     runningDays: [] as string[],
-    distance: ''
+    distance: '',
+    totalSeats: '',
+    seatClasses: {
+      '1A': { count: '', price: '' },
+      '2A': { count: '', price: '' },
+      '3A': { count: '', price: '' },
+      'SL': { count: '', price: '' },
+      'CC': { count: '', price: '' },
+      '2S': { count: '', price: '' }
+    }
   });
 
   useEffect(() => {
@@ -184,7 +195,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
         </div>
 
         {/* Registered Trains List for Admin */}
-        {userRole === 'admin' && statsData?.registeredTrains && (
+          {userRole === 'admin' && statsData?.registeredTrains && (
           <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Registered Trains</h3>
             <table className="min-w-full divide-y divide-gray-200">
@@ -196,21 +207,51 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departure Time</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrival Time</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seats (Available / Total)</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered At</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {statsData.registeredTrains.map((train: any) => (
-                  <tr key={train._id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.trainNumber}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.trainName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.source}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.destination}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.departureTime}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.arrivalTime}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(train.createdAt).toLocaleString()}</td>
-                  </tr>
-                ))}
+                {statsData.registeredTrains.map((train: any) => {
+                  const totalSeats = train.seats ? train.seats.length : 0;
+                  const bookedSeats = train.seats ? train.seats.filter((s: any) => s.isBooked).length : 0;
+                  const availableSeats = totalSeats - bookedSeats;
+                  return (
+                    <tr key={train._id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.trainNumber}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.trainName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.source}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.destination}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.departureTime}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.arrivalTime}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{availableSeats} / {totalSeats}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(train.createdAt).toLocaleString()}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            if (window.confirm(`Are you sure you want to delete train ${train.trainName} (${train.trainNumber})?`)) {
+                              try {
+                                await trainsAPI.deleteTrain(train._id);
+                                toast.success('Train deleted successfully');
+                                // Refresh dashboard stats
+                                const updatedStats = await dashboardAPI.getAdminStats();
+                                setStatsData(updatedStats);
+                              } catch (error: any) {
+                                toast.error(error.response?.data?.message || 'Failed to delete train');
+                              }
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -283,7 +324,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                 <span>Book Ticket</span>
               </button>
                   <button
-                    onClick={() => setShowMyBookings(true)}
+                    onClick={() => navigate('/dashboard/my-bookings')}
                     className="flex items-center justify-center space-x-2 p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
                   >
                     <Calendar className="h-5 w-5" />
@@ -377,16 +418,39 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                     !newTrainData.departureTime ||
                     !newTrainData.arrivalTime ||
                     !newTrainData.duration ||
-                    !newTrainData.distance
+                    !newTrainData.distance ||
+                    !newTrainData.totalSeats
                   ) {
                     toast.error('Please fill in all required fields');
                     return;
                   }
+
+                  // Generate seats array based on seat classes configuration
+                  const seats = [];
+                  let seatCounter = 1;
+
+                  Object.entries(newTrainData.seatClasses).forEach(([className, config]) => {
+                    const count = parseInt(config.count) || 0;
+                    const price = parseFloat(config.price) || 0;
+
+                    for (let i = 0; i < count; i++) {
+                      seats.push({
+                        seatNumber: `${seatCounter}${className.charAt(0)}`,
+                        class: className,
+                        price: price,
+                        isBooked: false
+                      });
+                      seatCounter++;
+                    }
+                  });
+
                   // Create train API call
                   await trainsAPI.createTrain({
                     ...newTrainData,
                     distance: Number(newTrainData.distance),
-                    runningDays: newTrainData.runningDays
+                    totalSeats: Number(newTrainData.totalSeats),
+                    runningDays: newTrainData.runningDays,
+                    seats: seats
                   });
                   toast.success('Train added successfully');
                   setShowAddTrainModal(false);
@@ -399,7 +463,16 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                     arrivalTime: '',
                     duration: '',
                     runningDays: [],
-                    distance: ''
+                    distance: '',
+                    totalSeats: '',
+                    seatClasses: {
+                      '1A': { count: '', price: '' },
+                      '2A': { count: '', price: '' },
+                      '3A': { count: '', price: '' },
+                      'SL': { count: '', price: '' },
+                      'CC': { count: '', price: '' },
+                      '2S': { count: '', price: '' }
+                    }
                   });
                   // Refresh dashboard stats
                   const updatedStats = await dashboardAPI.getAdminStats();
@@ -488,6 +561,17 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                   />
                 </div>
                 <div>
+                  <Label htmlFor="totalSeats">Total Seats</Label>
+                  <Input
+                    id="totalSeats"
+                    type="number"
+                    min="1"
+                    value={newTrainData.totalSeats}
+                    onChange={(e) => setNewTrainData(prev => ({ ...prev, totalSeats: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
                   <Label htmlFor="runningDays">Running Days</Label>
                   <Select
                     value={newTrainData.runningDays.join(', ')}
@@ -512,6 +596,55 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                       <SelectItem value="Sunday">Sunday</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              {/* Seat Classes Configuration */}
+              <div className="mt-6">
+                <Label className="text-lg font-semibold mb-4 block">Seat Classes Configuration</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(newTrainData.seatClasses).map(([className, config]) => (
+                    <div key={className} className="border rounded-lg p-4">
+                      <Label className="font-medium">{className} - {className === '1A' ? 'First AC' : className === '2A' ? 'Second AC' : className === '3A' ? 'Third AC' : className === 'SL' ? 'Sleeper' : className === 'CC' ? 'Chair Car' : 'Second Sitting'}</Label>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <div>
+                          <Label htmlFor={`${className}-count`} className="text-sm">Count</Label>
+                          <Input
+                            id={`${className}-count`}
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={config.count}
+                            onChange={(e) => setNewTrainData(prev => ({
+                              ...prev,
+                              seatClasses: {
+                                ...prev.seatClasses,
+                                [className]: { ...config, count: e.target.value }
+                              }
+                            }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={`${className}-price`} className="text-sm">Price (₹)</Label>
+                          <Input
+                            id={`${className}-price`}
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={config.price}
+                            onChange={(e) => setNewTrainData(prev => ({
+                              ...prev,
+                              seatClasses: {
+                                ...prev.seatClasses,
+                                [className]: { ...config, price: e.target.value }
+                              }
+                            }))}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
               <div className="mt-6 flex justify-end space-x-4">

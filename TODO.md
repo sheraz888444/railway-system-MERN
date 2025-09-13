@@ -1,14 +1,24 @@
-# Railway System Fixes
+# TODO: Fix Booking Error and Add Seat Availability Feature
 
-## Issues to Fix:
-1. **Search Bar Not Working**: Make search case-insensitive and include train name/number
-2. **Ticket Booking Error**: Fix prop mismatch between TrainSelector (_id) and TicketBookingForm (id)
-3. **Improve Search Functionality**: Add better search capabilities
+## Backend Changes
+- [x] Fix seat booking logic in backend/routes/bookings.js:
+  - Ensure proper seat availability check before booking
+  - Update seat status to booked after successful booking
+  - Handle seat unbooking on booking cancellation
+- [x] Add seat availability API endpoint in backend/routes/trains.js (if needed for frontend)
 
-## Tasks:
-- [ ] Update TrainSelector.tsx to make search case-insensitive
-- [ ] Add search by train name and train number in TrainSelector
-- [ ] Fix prop mismatch: Update TrainSelector to pass 'id' or update TicketBookingForm to use '_id'
-- [ ] Remove hardcoded train object in Dashboard.tsx
-- [ ] Test search functionality
-- [ ] Test ticket booking
+## Frontend Changes
+- [x] Update admin dashboard in frontend/src/components/Dashboard.tsx:
+  - Display total seats, booked seats, and available seats for each train
+- [x] Update passenger dashboard if needed to show seat availability
+- [x] Update staff dashboard if needed to show seat availability
+- [x] Modify frontend/src/components/TicketBookingForm.tsx:
+  - Fetch and display available seats for the selected train
+  - Validate seat selection against available seats
+  - Show error messages for unavailable seats
+
+## Testing
+- [ ] Test booking flow to ensure no index errors
+- [ ] Test seat availability display in dashboards
+- [ ] Test seat selection and validation in booking form
+- [ ] Test booking cancellation and seat unbooking

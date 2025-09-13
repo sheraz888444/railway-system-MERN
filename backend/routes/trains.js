@@ -10,10 +10,10 @@ router.get('/', async (req, res) => {
   try {
     const { source, destination, date } = req.query;
     let query = {};
-    
+
     if (source) query.source = new RegExp(source, 'i');
     if (destination) query.destination = new RegExp(destination, 'i');
-    
+
     const trains = await Train.find(query);
     res.json(trains);
   } catch (error) {
@@ -30,6 +30,31 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Train not found' });
     }
     res.json(train);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get available seats for a train
+router.get('/:id/seats', async (req, res) => {
+  try {
+    const train = await Train.findById(req.params.id);
+    if (!train) {
+      return res.status(404).json({ message: 'Train not found' });
+    }
+
+    if (!train.seats || train.seats.length === 0) {
+      return res.json({ availableSeats: [] });
+    }
+
+    const availableSeats = train.seats.filter(seat => !seat.isBooked).map(seat => ({
+      seatNumber: seat.seatNumber,
+      class: seat.class,
+      price: seat.price
+    }));
+
+    res.json({ availableSeats });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -66,11 +91,11 @@ router.put('/:id', [auth, authorize('admin', 'staff')], async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     );
-    
+
     if (!train) {
       return res.status(404).json({ message: 'Train not found' });
     }
-    
+
     res.json(train);
   } catch (error) {
     console.error(error);

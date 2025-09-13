@@ -68,6 +68,11 @@ export const trainsAPI = {
     const response = await api.delete(`/trains/${id}`);
     return response.data;
   },
+
+  getAvailableSeats: async (id: string) => {
+    const response = await api.get(`/trains/${id}/seats`);
+    return response.data;
+  },
 };
 
 // Bookings API

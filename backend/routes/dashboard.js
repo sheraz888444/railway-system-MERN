@@ -28,7 +28,7 @@ router.get('/admin', [auth, authorize('admin')], async (req, res) => {
 
     // Get registered trains with details
     const registeredTrains = await Train.find({})
-      .select('trainNumber trainName source destination departureTime arrivalTime createdAt')
+      .select('trainNumber trainName source destination departureTime arrivalTime seats createdAt')
       .sort({ createdAt: -1 });
 
     res.json({

@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import { body, validationResult } from 'express-validator';
 import Booking from '../models/Booking.js';
 import Train from '../models/Train.js';
@@ -36,11 +37,17 @@ router.post('/', [auth], [
       return res.status(404).json({ message: 'Train not found' });
     }
 
-    // Calculate total amount
+    // Check if train has seats configured
+    if (!train.seats || train.seats.length === 0) {
+      return res.status(400).json({ message: 'No seats available for this train. Please contact administrator.' });
+    }
+
+    // Calculate total amount and validate seats
+    const bookedSeats = [];
     const totalAmount = passengers.reduce((sum, passenger) => {
-      const seat = train.seats?.find(s => s.seatNumber === passenger.seatNumber);
+      const seat = train.seats.find(s => s.seatNumber === passenger.seatNumber);
       if (!seat) {
-        throw new Error(`Seat ${passenger.seatNumber} not found in train ${train.trainName}. Available seats: ${train.seats?.map(s => s.seatNumber).join(', ')}`);
+        throw new Error(`Seat ${passenger.seatNumber} not found in train ${train.trainName}. Available seats: ${train.seats.filter(s => !s.isBooked).map(s => s.seatNumber).join(', ')}`);
       }
       if (seat.isBooked) {
         throw new Error(`Seat ${passenger.seatNumber} is already booked`);
@@ -48,6 +55,7 @@ router.post('/', [auth], [
       if (!seat.price || seat.price <= 0) {
         throw new Error(`Invalid price for seat ${passenger.seatNumber}`);
       }
+      bookedSeats.push(seat.seatNumber);
       return sum + seat.price;
     }, 0);
 
@@ -62,8 +70,18 @@ router.post('/', [auth], [
     });
 
     await booking.save();
+
+    // Update train seats to mark as booked
+    bookedSeats.forEach(seatNumber => {
+      const seatIndex = train.seats.findIndex(s => s.seatNumber === seatNumber);
+      if (seatIndex !== -1) {
+        train.seats[seatIndex].isBooked = true;
+      }
+    });
+    await train.save();
+
     await booking.populate('trainId', 'trainName trainNumber source destination');
-    
+
     res.status(201).json(booking);
   } catch (error) {
     console.error(error);
@@ -75,9 +93,9 @@ router.post('/', [auth], [
 router.get('/my-bookings', auth, async (req, res) => {
   try {
     const bookings = await Booking.find({ userId: req.user.userId })
-      .populate('trainId', 'trainName trainNumber source destination')
+      .populate('trainId', 'trainName trainNumber source destination departureTime arrivalTime')
       .sort({ createdAt: -1 });
-    
+
     res.json(bookings);
   } catch (error) {
     console.error(error);
@@ -121,7 +139,7 @@ router.get('/pnr/:pnr', async (req, res) => {
 router.put('/:id/cancel', auth, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
-    
+
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
@@ -131,9 +149,27 @@ router.put('/:id/cancel', auth, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
+    // If booking is already cancelled, return
+    if (booking.bookingStatus === 'cancelled') {
+      return res.status(400).json({ message: 'Booking is already cancelled' });
+    }
+
+    // Get the train to update seat availability
+    const train = await Train.findById(booking.trainId);
+    if (train && train.seats) {
+      // Mark seats as available
+      booking.passengers.forEach(passenger => {
+        const seatIndex = train.seats.findIndex(s => s.seatNumber === passenger.seatNumber);
+        if (seatIndex !== -1) {
+          train.seats[seatIndex].isBooked = false;
+        }
+      });
+      await train.save();
+    }
+
     booking.bookingStatus = 'cancelled';
     await booking.save();
-    
+
     res.json({ message: 'Booking cancelled successfully', booking });
   } catch (error) {
     console.error(error);

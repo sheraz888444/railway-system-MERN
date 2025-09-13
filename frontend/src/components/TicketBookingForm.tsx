@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Minus } from 'lucide-react';
-import { bookingsAPI } from '@/services/api';
+import { bookingsAPI, trainsAPI } from '@/services/api';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const passengerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -50,6 +51,7 @@ interface TicketBookingFormProps {
 const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [availableSeats, setAvailableSeats] = useState<any[]>([]);
   const navigate = useNavigate();
 
   const {
@@ -79,10 +81,34 @@ const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, on
     name: 'passengers',
   });
 
+  useEffect(() => {
+    if (isOpen && train.id) {
+      const fetchAvailableSeats = async () => {
+        try {
+          const response = await trainsAPI.getAvailableSeats(train.id);
+          setAvailableSeats(response.availableSeats || []);
+        } catch (err) {
+          console.error('Failed to fetch available seats:', err);
+        }
+      };
+      fetchAvailableSeats();
+    }
+  }, [isOpen, train.id]);
+
   const onSubmit = async (data: BookingFormData) => {
     try {
       setLoading(true);
       setError(null);
+
+      // Validate seat availability
+      for (const passenger of data.passengers) {
+        const isSeatAvailable = availableSeats.some(seat => seat.seatNumber === passenger.seatNumber);
+        if (!isSeatAvailable) {
+          setError(`Seat ${passenger.seatNumber} is not available. Please select an available seat.`);
+          setLoading(false);
+          return;
+        }
+      }
 
       // Fix: Use train._id if available for booking
       const trainIdToUse = (data.trainId && data.trainId.length === 24) ? data.trainId : (train.id || '');
@@ -100,6 +126,11 @@ const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, on
       };
 
       const response = await bookingsAPI.createBooking(bookingData);
+
+      // Show success toast
+      toast.success('Ticket booked successfully!', {
+        description: `Your PNR is ${response.pnr}. Redirecting to ticket details...`,
+      });
 
       // Navigate to ticket details page
       navigate(`/ticket/${response.pnr}`);
@@ -286,12 +317,21 @@ const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, on
 
                       <div className="md:col-span-2">
                         <Label htmlFor={`passengers.${index}.seatNumber`}>Seat Number</Label>
-                        <Input
-                          id={`passengers.${index}.seatNumber`}
-                          placeholder="e.g., 1A, 2A, 5B"
-                          {...register(`passengers.${index}.seatNumber`)}
-                          className={errors.passengers?.[index]?.seatNumber ? 'border-red-500' : ''}
-                        />
+                        <Select
+                          value={watch(`passengers.${index}.seatNumber`)}
+                          onValueChange={(value) => setValue(`passengers.${index}.seatNumber`, value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select available seat" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableSeats.map((seat) => (
+                              <SelectItem key={seat.seatNumber} value={seat.seatNumber}>
+                                {seat.seatNumber} - {seat.class} - ₹{seat.price}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         {errors.passengers?.[index]?.seatNumber && (
                           <p className="text-red-500 text-sm mt-1">
                             {errors.passengers[index]?.seatNumber?.message}
