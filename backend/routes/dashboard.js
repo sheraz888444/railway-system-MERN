@@ -3,6 +3,9 @@ import auth, { authorize } from '../middleware/auth.js';
 import User from '../models/User.js';
 import Train from '../models/Train.js';
 import Booking from '../models/Booking.js';
+import StaffAssignment from '../models/StaffAssignment.js';
+import Task from '../models/Task.js';
+import Report from '../models/Report.js';
 
 const router = express.Router();
 
@@ -77,21 +80,161 @@ router.get('/staff', [auth, authorize('staff')], async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // Assuming staff assignments and tasks are stored in User model or related collections
-    // For demo, using dummy counts or you can extend with real data models
+    // Fetch assigned trains count
+    const assignedTrainsCount = await StaffAssignment.countDocuments({ staffId: userId, status: 'active' });
 
-    // Example: assignedTrains count from User model or related collection
-    const assignedTrains = 12; // Placeholder, replace with real query if available
-    const todayTasks = 8; // Placeholder
-    const passengerAssists = 45; // Placeholder
-    const completed = 37; // Placeholder
+    // Fetch today's tasks count
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+
+    const todayTasksCount = await Task.countDocuments({
+      staffId: userId,
+      dueDate: { $gte: todayStart, $lt: todayEnd },
+      status: { $ne: 'completed' }
+    });
+
+    // Fetch passenger assists count (example: tasks of type passenger_assistance completed today)
+    const passengerAssistsCount = await Task.countDocuments({
+      staffId: userId,
+      type: 'passenger_assistance',
+      status: 'completed',
+      completedAt: { $gte: todayStart, $lt: todayEnd }
+    });
+
+    // Fetch completed tasks count
+    const completedCount = await Task.countDocuments({
+      staffId: userId,
+      status: 'completed'
+    });
+
+    // Fetch train schedules assigned to staff
+    const assignedTrains = await StaffAssignment.find({ staffId: userId, status: 'active' })
+      .populate({
+        path: 'trainId',
+        select: 'trainNumber trainName source destination departureTime arrivalTime status delayMinutes delayReason'
+      });
+
+    // Fetch reports submitted by staff for today
+    const reports = await Report.find({
+      staffId: userId,
+      date: { $gte: todayStart, $lt: todayEnd }
+    }).sort({ date: -1 });
 
     res.json({
+      assignedTrainsCount,
+      todayTasksCount,
+      passengerAssistsCount,
+      completedCount,
       assignedTrains,
-      todayTasks,
-      passengerAssists,
-      completed
+      reports
     });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Staff tasks
+router.get('/staff/tasks', [auth, authorize('staff')], async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const tasks = await Task.find({ staffId: userId }).sort({ createdAt: -1 });
+    res.json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update task status
+router.put('/staff/tasks/:taskId', [auth, authorize('staff')], async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { status } = req.body;
+    const userId = req.user.userId;
+
+    const task = await Task.findOneAndUpdate(
+      { _id: taskId, staffId: userId },
+      { status, completedAt: status === 'completed' ? new Date() : null },
+      { new: true }
+    );
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json(task);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Staff reports
+router.get('/staff/reports', [auth, authorize('staff')], async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const reports = await Report.find({ staffId: userId }).sort({ date: -1 });
+    res.json(reports);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create daily report
+router.post('/staff/reports', [auth, authorize('staff')], async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { content, metrics, type = 'daily' } = req.body;
+
+    const report = new Report({
+      staffId: userId,
+      content,
+      metrics,
+      type
+    });
+
+    await report.save();
+    res.status(201).json(report);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin view all staff reports
+router.get('/admin/staff-reports', [auth, authorize('admin')], async (req, res) => {
+  try {
+    const reports = await Report.find({})
+      .populate('staffId', 'name email')
+      .sort({ date: -1 });
+    res.json(reports);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update report status (admin review)
+router.put('/admin/reports/:reportId', [auth, authorize('admin')], async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const { status, reviewComments } = req.body;
+
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      { status, reviewedBy: req.user.userId, reviewComments },
+      { new: true }
+    ).populate('staffId', 'name email');
+
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    res.json(report);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

@@ -63,6 +63,13 @@ const trainSchema = new mongoose.Schema({
     enum: ['active', 'cancelled', 'delayed'],
     default: 'active'
   },
+  delayMinutes: {
+    type: Number,
+    default: 0
+  },
+  delayReason: {
+    type: String
+  },
   distance: {
     type: Number,
     required: true

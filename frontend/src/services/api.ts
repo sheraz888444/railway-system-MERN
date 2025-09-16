@@ -146,6 +146,31 @@ export const dashboardAPI = {
     const response = await api.get('/dashboard/staff');
     return response.data;
   },
+
+  getStaffTasks: async () => {
+    const response = await api.get('/dashboard/staff/tasks');
+    return response.data;
+  },
+
+  getAllTrains: async () => {
+    const response = await api.get('/trains');
+    return response.data;
+  },
+
+  updateTaskStatus: async (taskId: string, status: string) => {
+    const response = await api.put(`/dashboard/staff/tasks/${taskId}`, { status });
+    return response.data;
+  },
+
+  createStaffReport: async (reportData: any) => {
+    const response = await api.post('/dashboard/staff/reports', reportData);
+    return response.data;
+  },
+
+  getAdminStaffReports: async () => {
+    const response = await api.get('/dashboard/admin/staff-reports');
+    return response.data;
+  }
 };
 
 export default api;

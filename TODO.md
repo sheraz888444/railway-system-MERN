@@ -1,24 +1,24 @@
-# TODO: Fix Booking Error and Add Seat Availability Feature
+# Staff Dashboard Dynamic Implementation
 
 ## Backend Changes
-- [x] Fix seat booking logic in backend/routes/bookings.js:
-  - Ensure proper seat availability check before booking
-  - Update seat status to booked after successful booking
-  - Handle seat unbooking on booking cancellation
-- [x] Add seat availability API endpoint in backend/routes/trains.js (if needed for frontend)
+- [ ] Create StaffAssignment model
+- [ ] Create Task model
+- [ ] Create Report model
+- [ ] Update dashboard.js to fetch real staff stats (assigned trains, tasks, etc.)
+- [ ] Add delay field to Train model or separate handling
+- [ ] Seed sample data for staff assignments, tasks, reports
 
 ## Frontend Changes
-- [x] Update admin dashboard in frontend/src/components/Dashboard.tsx:
-  - Display total seats, booked seats, and available seats for each train
-- [x] Update passenger dashboard if needed to show seat availability
-- [x] Update staff dashboard if needed to show seat availability
-- [x] Modify frontend/src/components/TicketBookingForm.tsx:
-  - Fetch and display available seats for the selected train
-  - Validate seat selection against available seats
-  - Show error messages for unavailable seats
+- [ ] Update Dashboard.tsx to display dynamic assigned trains list
+- [ ] Update Dashboard.tsx to display dynamic tasks list
+- [ ] Add schedules section showing train schedules
+- [ ] Add delays section showing train delays
+- [ ] Add reports generation and viewing
+- [ ] Link reports to admin dashboard
+- [ ] Enhance UI with better styling, colors, and appeal
 
 ## Testing
-- [ ] Test booking flow to ensure no index errors
-- [ ] Test seat availability display in dashboards
-- [ ] Test seat selection and validation in booking form
-- [ ] Test booking cancellation and seat unbooking
+- [ ] Test staff login and dashboard loading
+- [ ] Verify dynamic data display
+- [ ] Test report generation
+- [ ] Check admin access to staff reports

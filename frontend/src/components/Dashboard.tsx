@@ -47,6 +47,25 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
   // Modal state for admin add train
   const [showAddTrainModal, setShowAddTrainModal] = useState(false);
 
+  // Modal states for staff
+  const [showGenerateReport, setShowGenerateReport] = useState(false);
+  const [showTasks, setShowTasks] = useState(false);
+  const [showSchedules, setShowSchedules] = useState(false);
+  const [showDelays, setShowDelays] = useState(false);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [allTrains, setAllTrains] = useState<any[]>([]);
+  const [reportForm, setReportForm] = useState({
+    content: '',
+    passengersAssisted: 0,
+    issuesResolved: 0,
+    trainsMonitored: 0,
+    delaysReported: 0
+  });
+
+  // Modal states for admin
+  const [showStaffReports, setShowStaffReports] = useState(false);
+  const [staffReports, setStaffReports] = useState<any[]>([]);
+
   // Add train form state
   const [newTrainData, setNewTrainData] = useState({
     trainNumber: '',
@@ -81,6 +100,12 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
           data = await dashboardAPI.getPassengerStats();
         } else if (userRole === 'staff') {
           data = await dashboardAPI.getStaffStats();
+          // Fetch staff tasks
+          const tasksData = await dashboardAPI.getStaffTasks();
+          setTasks(tasksData);
+          // Fetch all trains for schedules and delays
+          const allTrainsData = await dashboardAPI.getAllTrains();
+          setAllTrains(allTrainsData);
         }
         setStatsData(data);
       } catch (err: any) {
@@ -98,24 +123,24 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
 
     if (userRole === 'admin') {
       return [
-        { title: 'Total Users', value: statsData.totalUsers?.toString() || '0', icon: Users, color: 'bg-blue-500' },
-        { title: 'Active Trains', value: statsData.activeTrains?.toString() || '0', icon: Train, color: 'bg-green-500' },
-        { title: 'Today Bookings', value: statsData.todayBookings?.toString() || '0', icon: BookOpen, color: 'bg-purple-500' },
-        { title: 'Revenue', value: `₹${statsData.revenue?.toLocaleString() || '0'}`, icon: CreditCard, color: 'bg-orange-500' }
+        { title: 'Total Users', value: statsData.totalUsers?.toString() || '0', icon: Users, color: 'bg-gradient-to-r from-blue-500 to-blue-600' },
+        { title: 'Active Trains', value: statsData.activeTrains?.toString() || '0', icon: Train, color: 'bg-gradient-to-r from-green-500 to-green-600' },
+        { title: 'Today Bookings', value: statsData.todayBookings?.toString() || '0', icon: BookOpen, color: 'bg-gradient-to-r from-purple-500 to-purple-600' },
+        { title: 'Revenue', value: `₹${statsData.revenue?.toLocaleString() || '0'}`, icon: CreditCard, color: 'bg-gradient-to-r from-orange-500 to-orange-600' }
       ];
     } else if (userRole === 'passenger') {
       return [
-        { title: 'Upcoming Trips', value: statsData.upcomingTrips?.toString() || '0', icon: Calendar, color: 'bg-blue-500' },
-        { title: 'Total Bookings', value: statsData.totalBookings?.toString() || '0', icon: BookOpen, color: 'bg-green-500' },
-        { title: 'Saved Routes', value: statsData.savedRoutes?.toString() || '0', icon: Train, color: 'bg-purple-500' },
-        { title: 'Loyalty Points', value: statsData.loyaltyPoints?.toString() || '0', icon: CreditCard, color: 'bg-orange-500' }
+        { title: 'Upcoming Trips', value: statsData.upcomingTrips?.toString() || '0', icon: Calendar, color: 'bg-gradient-to-r from-blue-500 to-blue-600' },
+        { title: 'Total Bookings', value: statsData.totalBookings?.toString() || '0', icon: BookOpen, color: 'bg-gradient-to-r from-green-500 to-green-600' },
+        { title: 'Saved Routes', value: statsData.savedRoutes?.toString() || '0', icon: Train, color: 'bg-gradient-to-r from-purple-500 to-purple-600' },
+        { title: 'Loyalty Points', value: statsData.loyaltyPoints?.toString() || '0', icon: CreditCard, color: 'bg-gradient-to-r from-orange-500 to-orange-600' }
       ];
     } else if (userRole === 'staff') {
       return [
-        { title: 'Assigned Trains', value: statsData.assignedTrains?.toString() || '0', icon: Train, color: 'bg-blue-500' },
-        { title: 'Today Tasks', value: statsData.todayTasks?.toString() || '0', icon: Clock, color: 'bg-green-500' },
-        { title: 'Passenger Assists', value: statsData.passengerAssists?.toString() || '0', icon: Users, color: 'bg-purple-500' },
-        { title: 'Completed', value: statsData.completed?.toString() || '0', icon: BookOpen, color: 'bg-orange-500' }
+        { title: 'Assigned Trains', value: statsData.assignedTrainsCount?.toString() || '0', icon: Train, color: 'bg-gradient-to-r from-blue-500 to-blue-600' },
+        { title: 'Today Tasks', value: statsData.todayTasksCount?.toString() || '0', icon: Clock, color: 'bg-gradient-to-r from-green-500 to-green-600' },
+        { title: 'Passenger Assists', value: statsData.passengerAssistsCount?.toString() || '0', icon: Users, color: 'bg-gradient-to-r from-purple-500 to-purple-600' },
+        { title: 'Completed Tasks', value: statsData.completedCount?.toString() || '0', icon: BookOpen, color: 'bg-gradient-to-r from-orange-500 to-orange-600' }
       ];
     }
     return [];
@@ -135,6 +160,21 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/login';
+  };
+
+  const fetchStaffReports = async () => {
+    try {
+      const reports = await dashboardAPI.getAdminStaffReports();
+      setStaffReports(reports);
+    } catch (error) {
+      console.error('Failed to fetch staff reports:', error);
+      toast.error('Failed to load staff reports');
+    }
+  };
+
+  const handleViewReports = async () => {
+    await fetchStaffReports();
+    setShowStaffReports(true);
   };
 
   if (loading) {
@@ -264,26 +304,47 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               {userRole === 'admin' && 'Recent Activity'}
               {userRole === 'passenger' && 'Upcoming Journeys'}
-              {userRole === 'staff' && "Today's Schedule"}
+              {userRole === 'staff' && "Assigned Trains & Tasks"}
             </h3>
             <div className="space-y-4">
-              {[1, 2, 3, 4].map((item) => (
-                <div key={item} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      {userRole === 'admin' && `System update completed - Module ${item}`}
-                      {userRole === 'passenger' && `Delhi to Mumbai - Express ${item}201`}
-                      {userRole === 'staff' && `Platform ${item} - Passenger assistance required`}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {userRole === 'admin' && `${item} hours ago`}
-                      {userRole === 'passenger' && `Departure: ${8 + item}:30 AM`}
-                      {userRole === 'staff' && `${item}:${item * 15} PM`}
-                    </p>
+              {userRole === 'staff' && statsData?.assignedTrains && statsData.assignedTrains.length > 0 ? (
+                statsData.assignedTrains.map((assignment: any) => (
+                  <div key={assignment._id} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        {assignment.trainId?.trainName} ({assignment.trainId?.trainNumber})
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {assignment.trainId?.source} → {assignment.trainId?.destination} | {assignment.trainId?.departureTime}
+                        {assignment.trainId?.status === 'delayed' && (
+                          <span className="ml-2 text-red-600 font-medium">
+                            Delayed by {assignment.trainId?.delayMinutes} min
+                          </span>
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : userRole === 'staff' ? (
+                <p className="text-gray-500 text-sm">No assigned trains</p>
+              ) : (
+                [1, 2, 3, 4].map((item) => (
+                  <div key={item} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        {userRole === 'admin' && `System update completed - Module ${item}`}
+                        {userRole === 'passenger' && `Delhi to Mumbai - Express ${item}201`}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {userRole === 'admin' && `${item} hours ago`}
+                        {userRole === 'passenger' && `Departure: ${8 + item}:30 AM`}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -304,10 +365,13 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                     <Users className="h-5 w-5" />
                     <span>Manage Users</span>
                   </button>
-                  <button className="flex items-center justify-center space-x-2 p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors">
-                    <BarChart3 className="h-5 w-5" />
-                    <span>View Reports</span>
-                  </button>
+          <button
+            onClick={handleViewReports}
+            className="flex items-center justify-center space-x-2 p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
+          >
+            <BarChart3 className="h-5 w-5" />
+            <span>View Reports</span>
+          </button>
                   <button className="flex items-center justify-center space-x-2 p-4 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors">
                     <Settings className="h-5 w-5" />
                     <span>Settings</span>
@@ -341,21 +405,33 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
               )}
               {userRole === 'staff' && (
                 <>
-                  <button className="flex items-center justify-center space-x-2 p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+                  <button
+                    onClick={() => setShowTasks(true)}
+                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-600 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
                     <Users className="h-5 w-5" />
-                    <span>Passenger Help</span>
+                    <span>View Tasks</span>
                   </button>
-                  <button className="flex items-center justify-center space-x-2 p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors">
+                  <button
+                    onClick={() => setShowSchedules(true)}
+                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-green-50 to-green-100 text-green-600 rounded-lg hover:from-green-100 hover:to-green-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
                     <Train className="h-5 w-5" />
-                    <span>Train Status</span>
+                    <span>Train Schedules</span>
                   </button>
-                  <button className="flex items-center justify-center space-x-2 p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors">
-                    <Calendar className="h-5 w-5" />
-                    <span>Schedule</span>
+                  <button
+                    onClick={() => setShowDelays(true)}
+                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-purple-50 to-purple-100 text-purple-600 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    <Clock className="h-5 w-5" />
+                    <span>View Delays</span>
                   </button>
-                  <button className="flex items-center justify-center space-x-2 p-4 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors">
+                  <button
+                    onClick={() => setShowGenerateReport(true)}
+                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-orange-50 to-orange-100 text-orange-600 rounded-lg hover:from-orange-100 hover:to-orange-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
                     <BookOpen className="h-5 w-5" />
-                    <span>Reports</span>
+                    <span>Generate Report</span>
                   </button>
                 </>
               )}
@@ -658,6 +734,266 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
             </form>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Staff Modals */}
+      {userRole === 'staff' && (
+        <>
+          {/* Tasks Modal */}
+          {showTasks && (
+            <Dialog open={showTasks} onOpenChange={() => setShowTasks(false)}>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>My Tasks</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {tasks.length > 0 ? (
+                    tasks.map((task: any) => (
+                      <div key={task._id} className="p-4 border rounded-lg bg-gray-50">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{task.title}</h4>
+                            <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                            <div className="flex items-center space-x-4 mt-2">
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                                task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-green-100 text-green-800'
+                              }`}>
+                                {task.priority}
+                              </span>
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                task.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {task.status}
+                              </span>
+                              {task.location && (
+                                <span className="text-xs text-gray-500">📍 {task.location}</span>
+                              )}
+                            </div>
+                          </div>
+                          {task.status !== 'completed' && (
+                            <Button
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  await dashboardAPI.updateTaskStatus(task._id, 'completed');
+                                  const updatedTasks = await dashboardAPI.getStaffTasks();
+                                  setTasks(updatedTasks);
+                                  toast.success('Task completed!');
+                                } catch (error) {
+                                  toast.error('Failed to update task');
+                                }
+                              }}
+                              className="ml-4"
+                            >
+                              Mark Complete
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-8">No tasks assigned</p>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+
+          {/* Schedules Modal */}
+          {showSchedules && (
+            <Dialog open={showSchedules} onOpenChange={() => setShowSchedules(false)}>
+              <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Train Schedules</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {allTrains.length > 0 ? (
+                    allTrains.map((train: any) => (
+                      <div key={train._id} className="p-4 border rounded-lg bg-white shadow-sm">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h4 className="font-medium text-gray-900">{train.trainName} ({train.trainNumber})</h4>
+                            <p className="text-sm text-gray-600">
+                              {train.source} → {train.destination}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Departure: {train.departureTime} | Arrival: {train.arrivalTime}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Duration: {train.duration} | Distance: {train.distance} km
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className={`px-3 py-1 text-sm rounded-full ${
+                              train.status === 'active' ? 'bg-green-100 text-green-800' :
+                              train.status === 'delayed' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {train.status}
+                            </span>
+                            {train.status === 'delayed' && (
+                              <p className="text-sm text-red-600 mt-1">
+                                Delayed by {train.delayMinutes} min
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-8">No trains available</p>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+
+          {/* Delays Modal */}
+          {showDelays && (
+            <Dialog open={showDelays} onOpenChange={() => setShowDelays(false)}>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Train Delays</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {allTrains.filter((train: any) => train.status === 'delayed').length > 0 ? (
+                    allTrains.filter((train: any) => train.status === 'delayed').map((train: any) => (
+                      <div key={train._id} className="p-4 border rounded-lg bg-red-50 border-red-200">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h4 className="font-medium text-gray-900">{train.trainName} ({train.trainNumber})</h4>
+                            <p className="text-sm text-gray-600">
+                              {train.source} → {train.destination}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Scheduled: {train.departureTime}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-semibold text-red-600">
+                              {train.delayMinutes} min delay
+                            </p>
+                            {train.delayReason && (
+                              <p className="text-sm text-red-500">{train.delayReason}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-8">No delayed trains</p>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+
+          {/* Generate Report Modal */}
+          {showGenerateReport && (
+            <Dialog open={showGenerateReport} onOpenChange={() => setShowGenerateReport(false)}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Generate Daily Report</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    try {
+                      await dashboardAPI.createStaffReport({
+                        content: reportForm.content,
+                        metrics: {
+                          passengersAssisted: reportForm.passengersAssisted,
+                          issuesResolved: reportForm.issuesResolved,
+                          trainsMonitored: reportForm.trainsMonitored,
+                          delaysReported: reportForm.delaysReported
+                        }
+                      });
+                      toast.success('Report submitted successfully!');
+                      setShowGenerateReport(false);
+                      setReportForm({
+                        content: '',
+                        passengersAssisted: 0,
+                        issuesResolved: 0,
+                        trainsMonitored: 0,
+                        delaysReported: 0
+                      });
+                    } catch (error) {
+                      toast.error('Failed to submit report');
+                    }
+                  }}
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="content">Report Content</Label>
+                      <Textarea
+                        id="content"
+                        value={reportForm.content}
+                        onChange={(e) => setReportForm(prev => ({ ...prev, content: e.target.value }))}
+                        placeholder="Describe your activities for today..."
+                        required
+                        rows={4}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="passengersAssisted">Passengers Assisted</Label>
+                        <Input
+                          id="passengersAssisted"
+                          type="number"
+                          min="0"
+                          value={reportForm.passengersAssisted}
+                          onChange={(e) => setReportForm(prev => ({ ...prev, passengersAssisted: parseInt(e.target.value) || 0 }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="issuesResolved">Issues Resolved</Label>
+                        <Input
+                          id="issuesResolved"
+                          type="number"
+                          min="0"
+                          value={reportForm.issuesResolved}
+                          onChange={(e) => setReportForm(prev => ({ ...prev, issuesResolved: parseInt(e.target.value) || 0 }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="trainsMonitored">Trains Monitored</Label>
+                        <Input
+                          id="trainsMonitored"
+                          type="number"
+                          min="0"
+                          value={reportForm.trainsMonitored}
+                          onChange={(e) => setReportForm(prev => ({ ...prev, trainsMonitored: parseInt(e.target.value) || 0 }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="delaysReported">Delays Reported</Label>
+                        <Input
+                          id="delaysReported"
+                          type="number"
+                          min="0"
+                          value={reportForm.delaysReported}
+                          onChange={(e) => setReportForm(prev => ({ ...prev, delaysReported: parseInt(e.target.value) || 0 }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-4 mt-6">
+                    <Button type="button" variant="outline" onClick={() => setShowGenerateReport(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit">
+                      Submit Report
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
+        </>
       )}
     </div>
   );
