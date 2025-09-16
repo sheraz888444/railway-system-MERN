@@ -6,6 +6,7 @@ import Booking from '../models/Booking.js';
 import StaffAssignment from '../models/StaffAssignment.js';
 import Task from '../models/Task.js';
 import Report from '../models/Report.js';
+import Announcement from '../models/Announcement.js';
 
 const router = express.Router();
 
@@ -235,6 +236,111 @@ router.put('/admin/reports/:reportId', [auth, authorize('admin')], async (req, r
     }
 
     res.json(report);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Announcements
+// Get active announcements for passengers
+router.get('/announcements', [auth], async (req, res) => {
+  try {
+    const now = new Date();
+    const announcements = await Announcement.find({
+      isActive: true,
+      $or: [
+        { expiresAt: null },
+        { expiresAt: { $gt: now } }
+      ]
+    })
+    .populate('staffId', 'name')
+    .sort({ priority: -1, createdAt: -1 })
+    .limit(10);
+
+    res.json(announcements);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create announcement (staff only)
+router.post('/staff/announcements', [auth, authorize('staff')], async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { title, content, type, priority, expiresAt } = req.body;
+
+    const announcement = new Announcement({
+      staffId: userId,
+      title,
+      content,
+      type,
+      priority,
+      expiresAt: expiresAt ? new Date(expiresAt) : null
+    });
+
+    await announcement.save();
+    res.status(201).json(announcement);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all announcements for staff/admin
+router.get('/staff/announcements', [auth, authorize('staff')], async (req, res) => {
+  try {
+    const announcements = await Announcement.find({})
+      .populate('staffId', 'name email')
+      .sort({ createdAt: -1 });
+    res.json(announcements);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update announcement status
+router.put('/staff/announcements/:announcementId', [auth, authorize('staff')], async (req, res) => {
+  try {
+    const { announcementId } = req.params;
+    const { isActive } = req.body;
+    const userId = req.user.userId;
+
+    const announcement = await Announcement.findOneAndUpdate(
+      { _id: announcementId, staffId: userId },
+      { isActive, updatedAt: new Date() },
+      { new: true }
+    );
+
+    if (!announcement) {
+      return res.status(404).json({ message: 'Announcement not found' });
+    }
+
+    res.json(announcement);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Delete announcement
+router.delete('/staff/announcements/:announcementId', [auth, authorize('staff')], async (req, res) => {
+  try {
+    const { announcementId } = req.params;
+    const userId = req.user.userId;
+
+    const announcement = await Announcement.findOneAndDelete({
+      _id: announcementId,
+      staffId: userId
+    });
+
+    if (!announcement) {
+      return res.status(404).json({ message: 'Announcement not found' });
+    }
+
+    res.json({ message: 'Announcement deleted successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

@@ -11,13 +11,15 @@ import {
   Clock,
   Ticket,
   Plus,
-  LogOut
+  LogOut,
+  AlertTriangle
 } from 'lucide-react';
 import { dashboardAPI, trainsAPI } from '../services/api';
 import TicketBookingForm from './TicketBookingForm';
 import MyBookings from './MyBookings';
 import TrackTrain from './TrackTrain';
 import TrainSelector from './TrainSelector';
+import AnnouncementTicker from './AnnouncementTicker';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -52,6 +54,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
   const [showTasks, setShowTasks] = useState(false);
   const [showSchedules, setShowSchedules] = useState(false);
   const [showDelays, setShowDelays] = useState(false);
+  const [showCreateAnnouncement, setShowCreateAnnouncement] = useState(false);
   const [tasks, setTasks] = useState<any[]>([]);
   const [allTrains, setAllTrains] = useState<any[]>([]);
   const [reportForm, setReportForm] = useState({
@@ -60,6 +63,13 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
     issuesResolved: 0,
     trainsMonitored: 0,
     delaysReported: 0
+  });
+  const [announcementForm, setAnnouncementForm] = useState({
+    title: '',
+    content: '',
+    type: 'general' as 'delay' | 'maintenance' | 'general' | 'emergency',
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'critical',
+    expiresAt: ''
   });
 
   // Modal states for admin
@@ -196,6 +206,9 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
   return (
     <div className="bg-gray-50 min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Announcements Ticker for Passengers */}
+        {userRole === 'passenger' && <AnnouncementTicker />}
+
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -432,6 +445,13 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                   >
                     <BookOpen className="h-5 w-5" />
                     <span>Generate Report</span>
+                  </button>
+                  <button
+                    onClick={() => setShowCreateAnnouncement(true)}
+                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-purple-50 to-purple-100 text-purple-600 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    <AlertTriangle className="h-5 w-5" />
+                    <span>Create Announcement</span>
                   </button>
                 </>
               )}

@@ -170,6 +170,32 @@ export const dashboardAPI = {
   getAdminStaffReports: async () => {
     const response = await api.get('/dashboard/admin/staff-reports');
     return response.data;
+  },
+
+  // Announcements API
+  getAnnouncements: async () => {
+    const response = await api.get('/dashboard/announcements');
+    return response.data;
+  },
+
+  createAnnouncement: async (announcementData: any) => {
+    const response = await api.post('/dashboard/staff/announcements', announcementData);
+    return response.data;
+  },
+
+  getStaffAnnouncements: async () => {
+    const response = await api.get('/dashboard/staff/announcements');
+    return response.data;
+  },
+
+  updateAnnouncementStatus: async (announcementId: string, isActive: boolean) => {
+    const response = await api.put(`/dashboard/staff/announcements/${announcementId}`, { isActive });
+    return response.data;
+  },
+
+  deleteAnnouncement: async (announcementId: string) => {
+    const response = await api.delete(`/dashboard/staff/announcements/${announcementId}`);
+    return response.data;
   }
 };
 
