@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { User, Lock, Mail, Train } from 'lucide-react';
+import { User, Lock, Mail, Train, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { authAPI } from '@/services/api';
@@ -14,6 +14,7 @@ const Login: React.FC = () => {
     role: 'passenger' as 'admin' | 'passenger' | 'staff'
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -21,8 +22,17 @@ const Login: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    setError(null);
+
     try {
       const response = await authAPI.login(formData.email, formData.password);
+
+      // Role validation
+      if (response.user.role !== formData.role) {
+        setError(`Incorrect role selected. You are registered as a ${response.user.role}.`);
+        setIsLoading(false);
+        return;
+      }
 
       // Store token and user data
       localStorage.setItem('token', response.token);
@@ -43,6 +53,8 @@ const Login: React.FC = () => {
         variant: "destructive",
       });
     } finally {
+      // Keep loading false if there's a role error
+      if (error === null)
       setIsLoading(false);
     }
   };
@@ -55,10 +67,19 @@ const Login: React.FC = () => {
             <Train className="h-12 w-12 text-blue-600" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">Welcome to RailReserve</CardTitle>
-          <p className="text-gray-600">Sign in to your account</p>
+          <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md flex items-center">
+                <AlertCircle className="h-5 w-5 mr-3" />
+                <div>
+                  <p className="font-bold">Login Error</p>
+                  <p>{error}</p>
+                </div>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <div className="relative">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Info, Wrench, Zap } from 'lucide-react';
 import { dashboardAPI } from '../services/api';
+import { io } from 'socket.io-client';
 
 interface Announcement {
   _id: string;
@@ -12,6 +13,7 @@ interface Announcement {
     name: string;
   };
   createdAt: string;
+  expiresAt?: string;
 }
 
 const AnnouncementTicker: React.FC = () => {
@@ -36,6 +38,39 @@ const AnnouncementTicker: React.FC = () => {
     // Refresh announcements every 5 minutes
     const interval = setInterval(fetchAnnouncements, 5 * 60 * 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Connect to the WebSocket server
+    const socket = io('http://localhost:5000'); // Your backend URL
+
+    // Listen for new announcements
+    socket.on('new-announcement', (newAnnouncement: Announcement) => {
+      setAnnouncements(prevAnnouncements => [newAnnouncement, ...prevAnnouncements]);
+      setCurrentIndex(0); // Show the new announcement immediately
+    });
+
+    // Disconnect on component unmount
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const expiryCheckInterval = setInterval(() => {
+      const now = new Date();
+      setAnnouncements(prev => {
+        const activeAnnouncements = prev.filter(ann => 
+          !ann.expiresAt || new Date(ann.expiresAt) > now
+        );
+        if (activeAnnouncements.length < prev.length) {
+          setCurrentIndex(0); // Reset index if an announcement was removed
+        }
+        return activeAnnouncements;
+      });
+    }, 1000); // Check every second
+
+    return () => clearInterval(expiryCheckInterval);
   }, []);
 
   useEffect(() => {

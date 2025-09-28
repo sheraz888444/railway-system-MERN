@@ -281,7 +281,12 @@ router.post('/staff/announcements', [auth, authorize('staff')], async (req, res)
     });
 
     await announcement.save();
-    res.status(201).json(announcement);
+
+    // Populate staff name for the event payload
+    const populatedAnnouncement = await announcement.populate('staffId', 'name');
+    req.io.emit('new-announcement', populatedAnnouncement);
+
+    res.status(201).json(populatedAnnouncement);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

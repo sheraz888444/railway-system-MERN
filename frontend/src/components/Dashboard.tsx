@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { io } from 'socket.io-client';
 import {
   BarChart3,
   Users,
@@ -9,7 +10,6 @@ import {
   BookOpen,
   CreditCard,
   Clock,
-  Ticket,
   Plus,
   LogOut,
   AlertTriangle
@@ -28,11 +28,32 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 
 interface DashboardProps {
   userRole: 'admin' | 'passenger' | 'staff';
 }
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: 'spring', stiffness: 100 },
+  },
+};
+
 
 const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
   const navigate = useNavigate();
@@ -129,6 +150,23 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
     fetchStats();
   }, [userRole]);
 
+  useEffect(() => {
+    if (userRole !== 'passenger') return;
+
+    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+
+    socket.on('new-announcement', (newAnnouncement: any) => {
+      toast.info(`New Announcement: ${newAnnouncement.title}`, {
+        description: newAnnouncement.content,
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [userRole]);
+
+
   const getStats = () => {
     if (!statsData) return [];
 
@@ -190,31 +228,45 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 min-h-screen py-8 flex items-center justify-center">
-        <p className="text-gray-600 text-lg">Loading dashboard data...</p>
+      <div className="bg-gray-100 dark:bg-slate-900 min-h-screen p-8">
+        <div className="max-w-7xl mx-auto animate-pulse">
+          <div className="h-8 w-1/3 bg-gray-300 dark:bg-slate-700 rounded-md mb-8"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-gray-200 dark:bg-slate-800 rounded-xl"></div>)}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 h-96 bg-gray-200 dark:bg-slate-800 rounded-xl"></div>
+            <div className="h-96 bg-gray-200 dark:bg-slate-800 rounded-xl"></div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-gray-50 min-h-screen py-8 flex items-center justify-center">
+      <div className="bg-gray-100 dark:bg-slate-900 min-h-screen py-8 flex items-center justify-center">
         <p className="text-red-600 text-lg">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
+    <div className="bg-gray-100 dark:bg-slate-900 min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Announcements Ticker for Passengers */}
         {userRole === 'passenger' && <AnnouncementTicker />}
 
-        <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{getDashboardTitle()}</h1>
-              <p className="text-gray-600 mt-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{getDashboardTitle()}</h1>
+              <p className="text-gray-600 dark:text-slate-400 mt-2">
                 {userRole === 'admin' && 'Manage your railway system efficiently'}
                 {userRole === 'passenger' && 'Track your journeys and manage bookings'}
                 {userRole === 'staff' && 'Assist passengers and manage operations'}
@@ -223,99 +275,115 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 bg-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:border-slate-700"
             >
               <LogOut className="h-4 w-4" />
               <span>Logout</span>
             </Button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <motion.div
+              key={index}
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-slate-700 transition-shadow duration-300 hover:shadow-2xl"
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-slate-400">{stat.title}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{stat.value}</p>
                 </div>
-                <div className={`${stat.color} p-3 rounded-lg`}>
+                <div className={`${stat.color} p-3 rounded-lg shadow-md`}>
                   <stat.icon className="h-6 w-6 text-white" />
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Registered Trains List for Admin */}
           {userRole === 'admin' && statsData?.registeredTrains && (
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Registered Trains</h3>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
+          <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-slate-700 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Registered Trains</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-700/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Train Number</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Train Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departure Time</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrival Time</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seats (Available / Total)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered At</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  {['Train', 'Route', 'Schedule', 'Seats (Avail/Total)', 'Registered At', 'Actions'].map(header => (
+                    <th key={header} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">{header}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {statsData.registeredTrains.map((train: any) => {
-                  const totalSeats = train.seats ? train.seats.length : 0;
-                  const bookedSeats = train.seats ? train.seats.filter((s: any) => s.isBooked).length : 0;
-                  const availableSeats = totalSeats - bookedSeats;
-                  return (
-                    <tr key={train._id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.trainNumber}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.trainName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.source}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.destination}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.departureTime}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{train.arrivalTime}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{availableSeats} / {totalSeats}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(train.createdAt).toLocaleString()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={async () => {
-                            if (window.confirm(`Are you sure you want to delete train ${train.trainName} (${train.trainNumber})?`)) {
-                              try {
-                                await trainsAPI.deleteTrain(train._id);
-                                toast.success('Train deleted successfully');
-                                // Refresh dashboard stats
-                                const updatedStats = await dashboardAPI.getAdminStats();
-                                setStatsData(updatedStats);
-                              } catch (error: any) {
-                                toast.error(error.response?.data?.message || 'Failed to delete train');
-                              }
-                            }
-                          }}
-                          className="text-red-600 hover:text-red-900"
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                  <AnimatePresence>
+                    {statsData.registeredTrains.map((train: any) => {
+                      const totalSeats = train.seats ? train.seats.length : 0;
+                      const bookedSeats = train.seats ? train.seats.filter((s: any) => s.isBooked).length : 0;
+                      const availableSeats = totalSeats - bookedSeats;
+                      return (
+                        <motion.tr
+                          key={train._id}
+                          layout
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="hover:bg-gray-50 dark:hover:bg-slate-700/50"
                         >
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{train.trainName} <span className="text-gray-500 dark:text-slate-400">({train.trainNumber})</span></td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">{train.source} → {train.destination}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">{train.departureTime} - {train.arrivalTime}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">{availableSeats} / {totalSeats}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">{new Date(train.createdAt).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                if (window.confirm(`Are you sure you want to delete train ${train.trainName} (${train.trainNumber})?`)) {
+                                  try {
+                                    await trainsAPI.deleteTrain(train._id);
+                                    toast.success('Train deleted successfully');
+                                    const updatedStats = await dashboardAPI.getAdminStats();
+                                    setStatsData(updatedStats);
+                                  } catch (error: any) {
+                                    toast.error(error.response?.data?.message || 'Failed to delete train');
+                                  }
+                                }
+                              }}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/50"
+                            >
+                              Delete
+                            </Button>
+                          </td>
+                        </motion.tr>
+                      );
+                    })}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
         )}
 
         {/* Activity & Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <motion.div
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {/* Activity Section */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-slate-700 lg:col-span-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               {userRole === 'admin' && 'Recent Activity'}
               {userRole === 'passenger' && 'Upcoming Journeys'}
               {userRole === 'staff' && "Assigned Trains & Tasks"}
@@ -323,13 +391,13 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
             <div className="space-y-4">
               {userRole === 'staff' && statsData?.assignedTrains && statsData.assignedTrains.length > 0 ? (
                 statsData.assignedTrains.map((assignment: any) => (
-                  <div key={assignment._id} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                  <div key={assignment._id} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-700 dark:to-slate-600 rounded-lg border border-blue-200 dark:border-slate-600">
                     <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
                         {assignment.trainId?.trainName} ({assignment.trainId?.trainNumber})
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 dark:text-slate-400">
                         {assignment.trainId?.source} → {assignment.trainId?.destination} | {assignment.trainId?.departureTime}
                         {assignment.trainId?.status === 'delayed' && (
                           <span className="ml-2 text-red-600 font-medium">
@@ -341,17 +409,17 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                   </div>
                 ))
               ) : userRole === 'staff' ? (
-                <p className="text-gray-500 text-sm">No assigned trains</p>
+                <p className="text-gray-500 dark:text-slate-400 text-sm">No assigned trains</p>
               ) : (
                 [1, 2, 3, 4].map((item) => (
-                  <div key={item} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div key={item} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
                         {userRole === 'admin' && `System update completed - Module ${item}`}
                         {userRole === 'passenger' && `Delhi to Mumbai - Express ${item}201`}
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 dark:text-slate-400">
                         {userRole === 'admin' && `${item} hours ago`}
                         {userRole === 'passenger' && `Departure: ${8 + item}:30 AM`}
                       </p>
@@ -360,105 +428,123 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                 ))
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-slate-700 lg:col-span-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-4">
               {userRole === 'admin' && (
                 <>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => setShowAddTrainModal(true)}
-                    className="flex items-center justify-center space-x-2 p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                    className="flex items-center justify-center space-x-2 p-4 bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-500/30 transition-colors"
                   >
                     <Plus className="h-5 w-5" />
                     <span>Add Train</span>
-                  </button>
-                  <button className="flex items-center justify-center space-x-2 p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+                  </motion.button>
+                  <motion.button
+                    onClick={() => toast.info('Manage Users feature coming soon!')}
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    className="flex items-center justify-center space-x-2 p-4 bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-500/30 transition-colors"
+                  >
                     <Users className="h-5 w-5" />
                     <span>Manage Users</span>
-                  </button>
-          <button
-            onClick={handleViewReports}
-            className="flex items-center justify-center space-x-2 p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
-          >
-            <BarChart3 className="h-5 w-5" />
-            <span>View Reports</span>
-          </button>
-                  <button className="flex items-center justify-center space-x-2 p-4 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors">
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    onClick={handleViewReports}
+                    className="flex items-center justify-center space-x-2 p-4 bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors"
+                  >
+                    <BarChart3 className="h-5 w-5" />
+                    <span>View Reports</span>
+                  </motion.button>
+                  <motion.button
+                    onClick={() => toast.info('Settings feature coming soon!')}
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    className="flex items-center justify-center space-x-2 p-4 bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-500/30 transition-colors"
+                  >
                     <Settings className="h-5 w-5" />
                     <span>Settings</span>
-                  </button>
+                  </motion.button>
                 </>
               )}
               {userRole === 'passenger' && (
                 <>
-              <button
-                onClick={() => setShowTrainSelector(true)}
-                className="flex items-center justify-center space-x-2 p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-              >
-                <BookOpen className="h-5 w-5" />
-                <span>Book Ticket</span>
-              </button>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowTrainSelector(true)}
+                    className="flex items-center justify-center space-x-2 p-4 bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-500/30 transition-colors"
+                  >
+                    <BookOpen className="h-5 w-5" />
+                    <span>Book Ticket</span>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => navigate('/dashboard/my-bookings')}
-                    className="flex items-center justify-center space-x-2 p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                    className="flex items-center justify-center space-x-2 p-4 bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-500/30 transition-colors"
                   >
                     <Calendar className="h-5 w-5" />
                     <span>My Bookings</span>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => setShowTrackTrain(true)}
-                    className="flex items-center justify-center space-x-2 p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
+                    className="flex items-center justify-center space-x-2 p-4 bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors"
                   >
                     <Train className="h-5 w-5" />
                     <span>Track Train</span>
-                  </button>
+                  </motion.button>
                 </>
               )}
               {userRole === 'staff' && (
                 <>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => setShowTasks(true)}
-                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-600 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="flex items-center justify-center space-x-2 p-4 bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-500/30 transition-colors"
                   >
                     <Users className="h-5 w-5" />
                     <span>View Tasks</span>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => setShowSchedules(true)}
-                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-green-50 to-green-100 text-green-600 rounded-lg hover:from-green-100 hover:to-green-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="flex items-center justify-center space-x-2 p-4 bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-500/30 transition-colors"
                   >
                     <Train className="h-5 w-5" />
                     <span>Train Schedules</span>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => setShowDelays(true)}
-                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-purple-50 to-purple-100 text-purple-600 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="flex items-center justify-center space-x-2 p-4 bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors"
                   >
                     <Clock className="h-5 w-5" />
                     <span>View Delays</span>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => setShowGenerateReport(true)}
-                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-orange-50 to-orange-100 text-orange-600 rounded-lg hover:from-orange-100 hover:to-orange-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="flex items-center justify-center space-x-2 p-4 bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-500/30 transition-colors"
                   >
                     <BookOpen className="h-5 w-5" />
                     <span>Generate Report</span>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={() => setShowCreateAnnouncement(true)}
-                    className="flex items-center justify-center space-x-2 p-4 bg-gradient-to-r from-purple-50 to-purple-100 text-purple-600 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="flex items-center justify-center space-x-2 p-4 bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-500/30 transition-colors"
                   >
                     <AlertTriangle className="h-5 w-5" />
                     <span>Create Announcement</span>
-                  </button>
+                  </motion.button>
                 </>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* Modals for Passenger */}
@@ -495,10 +581,26 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
         />
       )}
 
+      {/* Staff Reports Modal for Admin */}
+      {showStaffReports && (
+        <StaffReportsModal
+          isOpen={showStaffReports}
+          onClose={() => setShowStaffReports(false)}
+          reports={staffReports}
+          onUpdateReportStatus={async (reportId, status, reviewComments) => {
+            // Placeholder for API call
+            console.log('Updating report:', reportId, status, reviewComments);
+            // await dashboardAPI.updateStaffReport(reportId, { status, reviewComments });
+            await fetchStaffReports(); // Re-fetch to show updated status
+          }}
+        />
+      )}
+
+
       {/* Add Train Modal */}
       {showAddTrainModal && (
         <Dialog open={showAddTrainModal} onOpenChange={() => setShowAddTrainModal(false)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800 dark:text-white">
             <DialogHeader>
               <DialogTitle>Add New Train</DialogTitle>
             </DialogHeader>
@@ -1014,6 +1116,86 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
               </DialogContent>
             </Dialog>
           )}
+
+          {/* Create Announcement Modal */}
+          {showCreateAnnouncement && (
+            <Dialog open={showCreateAnnouncement} onOpenChange={() => setShowCreateAnnouncement(false)}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Create New Announcement</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    try {
+                      await dashboardAPI.createAnnouncement(announcementForm);
+                      toast.success('Announcement created successfully!');
+                      setShowCreateAnnouncement(false);
+                      setAnnouncementForm({
+                        title: '',
+                        content: '',
+                        type: 'general',
+                        priority: 'medium',
+                        expiresAt: ''
+                      });
+                    } catch (error) {
+                      toast.error('Failed to create announcement');
+                    }
+                  }}
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="announcement-title">Title</Label>
+                      <Input id="announcement-title" value={announcementForm.title} onChange={(e) => setAnnouncementForm(p => ({ ...p, title: e.target.value }))} required />
+                    </div>
+                    <div>
+                      <Label htmlFor="announcement-content">Content</Label>
+                      <Textarea id="announcement-content" value={announcementForm.content} onChange={(e) => setAnnouncementForm(p => ({ ...p, content: e.target.value }))} required />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="announcement-type">Type</Label>
+                        <Select value={announcementForm.type} onValueChange={(v) => setAnnouncementForm(p => ({ ...p, type: v as any }))}>
+                          <SelectTrigger id="announcement-type"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="general">General</SelectItem>
+                            <SelectItem value="delay">Delay</SelectItem>
+                            <SelectItem value="maintenance">Maintenance</SelectItem>
+                            <SelectItem value="emergency">Emergency</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="announcement-priority">Priority</Label>
+                        <Select value={announcementForm.priority} onValueChange={(v) => setAnnouncementForm(p => ({ ...p, priority: v as any }))}>
+                          <SelectTrigger id="announcement-priority"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="critical">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="announcement-expires">Expires At (Optional)</Label>
+                      <Input id="announcement-expires" type="datetime-local" value={announcementForm.expiresAt} onChange={(e) => setAnnouncementForm(p => ({ ...p, expiresAt: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-4 mt-6">
+                    <Button type="button" variant="outline" onClick={() => setShowCreateAnnouncement(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit">
+                      Create Announcement
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
+
         </>
       )}
     </div>
