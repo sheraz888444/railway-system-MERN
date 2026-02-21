@@ -15,6 +15,11 @@ router.post('/register', [
   body('role').isIn(['passenger', 'staff']).withMessage('Invalid role - admin cannot be registered')
 ], async (req, res) => {
   try {
+    // Admin role is reserved - only for Sheraz
+    if (req.body.role === 'admin') {
+      return res.status(400).json({ message: 'This role is only for Sheraz' });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
