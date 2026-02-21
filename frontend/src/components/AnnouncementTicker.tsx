@@ -42,7 +42,7 @@ const AnnouncementTicker: React.FC = () => {
 
   useEffect(() => {
     // Connect to the WebSocket server
-    const socket = io('http://localhost:5000'); // Your backend URL
+    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
 
     // Listen for new announcements
     socket.on('new-announcement', (newAnnouncement: Announcement) => {
