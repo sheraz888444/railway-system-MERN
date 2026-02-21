@@ -8,8 +8,9 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 
-// Import routes
+// Import routes and models
 import authRoutes from './routes/auth.js';
+import User from './models/User.js';
 import trainRoutes from './routes/trains.js';
 import bookingRoutes from './routes/bookings.js';
 import userRoutes from './routes/users.js';
@@ -93,10 +94,39 @@ io.on('connection', (socket) => {
   });
 });
 
+// Ensure admin user exists (only credential that can be admin)
+const ADMIN_EMAIL = 'admin@gmail.com';
+const ADMIN_PASSWORD = '10051100';
+
+async function ensureAdminExists() {
+  // Demote any user with admin role who is not the official admin
+  await User.updateMany(
+    { role: 'admin', email: { $ne: ADMIN_EMAIL } },
+    { $set: { role: 'passenger' } }
+  );
+
+  const existingAdmin = await User.findOne({ email: ADMIN_EMAIL });
+  if (!existingAdmin) {
+    const admin = new User({
+      name: 'Admin',
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
+      phone: '0000000000',
+      role: 'admin'
+    });
+    await admin.save();
+    console.log('Admin user created (admin@gmail.com)');
+  } else if (existingAdmin.role !== 'admin') {
+    // Ensure admin@gmail.com always has admin role
+    await User.findByIdAndUpdate(existingAdmin._id, { role: 'admin' });
+  }
+}
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log('Connected to MongoDB');
+    await ensureAdminExists();
     server.listen(PORT, () => {
       console.log(`Server with WebSocket support running on port ${PORT}`);
     });

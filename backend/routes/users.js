@@ -49,9 +49,9 @@ router.put('/profile', [auth], [
   }
 });
 
-// Update user role (Admin only)
+// Update user role (Admin only) - admin role cannot be assigned, only admin@gmail.com is admin
 router.put('/:id/role', [auth, authorize('admin')], [
-  body('role').isIn(['passenger', 'admin', 'staff']).withMessage('Invalid role')
+  body('role').isIn(['passenger', 'staff']).withMessage('Invalid role - only passenger and staff can be assigned')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -59,15 +59,20 @@ router.put('/:id/role', [auth, authorize('admin')], [
       return res.status(400).json({ errors: errors.array() });
     }
 
+    // Never allow promoting anyone to admin - only admin@gmail.com is admin
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    if (targetUser.email === 'admin@gmail.com') {
+      return res.status(403).json({ message: 'Admin role cannot be modified' });
+    }
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { role: req.body.role },
       { new: true }
     );
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
 
     res.json(user);
   } catch (error) {

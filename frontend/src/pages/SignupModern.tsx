@@ -145,7 +145,6 @@ const Signup: React.FC = () => {
                 >
                   <option value="passenger" className="bg-slate-700">Passenger</option>
                   <option value="staff" className="bg-slate-700">Staff</option>
-                  <option value="admin" className="bg-slate-700">Admin</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                   <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

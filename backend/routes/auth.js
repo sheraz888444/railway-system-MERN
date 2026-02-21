@@ -12,7 +12,7 @@ router.post('/register', [
   body('email').isEmail().withMessage('Please provide a valid email'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('phone').isMobilePhone().withMessage('Please provide a valid phone number'),
-  body('role').isIn(['passenger', 'admin', 'staff']).withMessage('Invalid role')
+  body('role').isIn(['passenger', 'staff']).withMessage('Invalid role - admin cannot be registered')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
