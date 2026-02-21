@@ -376,62 +376,61 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
 
         {/* Activity & Quick Actions */}
         <motion.div
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          className={`grid grid-cols-1 gap-8 ${userRole === 'passenger' ? '' : 'lg:grid-cols-3'}`}
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {/* Activity Section */}
-          <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-slate-700 lg:col-span-1">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {userRole === 'admin' && 'Recent Activity'}
-              {userRole === 'passenger' && 'Upcoming Journeys'}
-              {userRole === 'staff' && "Assigned Trains & Tasks"}
-            </h3>
-            <div className="space-y-4">
-              {userRole === 'staff' && statsData?.assignedTrains && statsData.assignedTrains.length > 0 ? (
-                statsData.assignedTrains.map((assignment: any) => (
-                  <div key={assignment._id} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-700 dark:to-slate-600 rounded-lg border border-blue-200 dark:border-slate-600">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {assignment.trainId?.trainName} ({assignment.trainId?.trainNumber})
-                      </p>
-                      <p className="text-xs text-gray-600 dark:text-slate-400">
-                        {assignment.trainId?.source} → {assignment.trainId?.destination} | {assignment.trainId?.departureTime}
-                        {assignment.trainId?.status === 'delayed' && (
-                          <span className="ml-2 text-red-600 font-medium">
-                            Delayed by {assignment.trainId?.delayMinutes} min
-                          </span>
-                        )}
-                      </p>
+          {/* Activity Section - hidden for passenger */}
+          {userRole !== 'passenger' && (
+            <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-slate-700 lg:col-span-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                {userRole === 'admin' && 'Recent Activity'}
+                {userRole === 'staff' && "Assigned Trains & Tasks"}
+              </h3>
+              <div className="space-y-4">
+                {userRole === 'staff' && statsData?.assignedTrains && statsData.assignedTrains.length > 0 ? (
+                  statsData.assignedTrains.map((assignment: any) => (
+                    <div key={assignment._id} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-700 dark:to-slate-600 rounded-lg border border-blue-200 dark:border-slate-600">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {assignment.trainId?.trainName} ({assignment.trainId?.trainNumber})
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-slate-400">
+                          {assignment.trainId?.source} → {assignment.trainId?.destination} | {assignment.trainId?.departureTime}
+                          {assignment.trainId?.status === 'delayed' && (
+                            <span className="ml-2 text-red-600 font-medium">
+                              Delayed by {assignment.trainId?.delayMinutes} min
+                            </span>
+                          )}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))
-              ) : userRole === 'staff' ? (
-                <p className="text-gray-500 dark:text-slate-400 text-sm">No assigned trains</p>
-              ) : (
-                [1, 2, 3, 4].map((item) => (
-                  <div key={item} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {userRole === 'admin' && `System update completed - Module ${item}`}
-                        {userRole === 'passenger' && `Delhi to Mumbai - Express ${item}201`}
-                      </p>
-                      <p className="text-xs text-gray-600 dark:text-slate-400">
-                        {userRole === 'admin' && `${item} hours ago`}
-                        {userRole === 'passenger' && `Departure: ${8 + item}:30 AM`}
-                      </p>
+                  ))
+                ) : userRole === 'staff' ? (
+                  <p className="text-gray-500 dark:text-slate-400 text-sm">No assigned trains</p>
+                ) : (
+                  [1, 2, 3, 4].map((item) => (
+                    <div key={item} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {userRole === 'admin' && `System update completed - Module ${item}`}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-slate-400">
+                          {userRole === 'admin' && `${item} hours ago`}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </motion.div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          )}
 
           {/* Quick Actions */}
-          <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-slate-700 lg:col-span-2">
+          <motion.div variants={itemVariants} className={`bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-slate-700 ${userRole === 'passenger' ? '' : 'lg:col-span-2'}`}>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-4">
               {userRole === 'admin' && (
