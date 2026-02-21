@@ -291,7 +291,7 @@ const TrainSelector: React.FC<TrainSelectorProps> = ({ isOpen, onClose, onSelect
                         const minPrice = Math.min(...classSeats.map(seat => seat.price));
                         return (
                           <div key={seatClass} className="bg-gray-100 px-3 py-1 rounded-lg text-sm">
-                            {seatClass}: ₹{minPrice} ({classSeats.length} seats)
+                            {seatClass}: Rs {minPrice} ({classSeats.length} seats)
                           </div>
                         );
                       })}

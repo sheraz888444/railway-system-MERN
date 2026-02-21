@@ -327,7 +327,7 @@ const TicketBookingForm: React.FC<TicketBookingFormProps> = ({ train, isOpen, on
                           <SelectContent>
                             {availableSeats.map((seat) => (
                               <SelectItem key={seat.seatNumber} value={seat.seatNumber}>
-                                {seat.seatNumber} - {seat.class} - ₹{seat.price}
+                                {seat.seatNumber} - {seat.class} - Rs {seat.price}
                               </SelectItem>
                             ))}
                           </SelectContent>

@@ -101,7 +101,7 @@ const TicketDetails: React.FC = () => {
 
     // Total Amount
     doc.setFontSize(14);
-    doc.text(`Total Amount: ₹${booking.totalAmount}`, 20, yPos + 10);
+    doc.text(`Total Amount: Rs ${booking.totalAmount}`, 20, yPos + 10);
 
     // Status
     doc.text(`Booking Status: ${booking.bookingStatus}`, 20, yPos + 20);
@@ -268,7 +268,7 @@ const TicketDetails: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Amount</p>
-                  <p className="text-2xl font-bold text-blue-600">₹{booking.totalAmount}</p>
+                  <p className="text-2xl font-bold text-blue-600">Rs {booking.totalAmount}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-600">Payment Status</p>

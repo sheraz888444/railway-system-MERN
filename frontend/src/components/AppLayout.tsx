@@ -156,7 +156,7 @@ const AppLayout = () => {
                     </div>
                     
                     <div className="text-right ml-6">
-                      <p className="text-2xl font-bold text-blue-600">₹{train.price}</p>
+                      <p className="text-2xl font-bold text-blue-600">Rs {train.price}</p>
                       <Button className="mt-2">Book Now</Button>
                     </div>
                   </div>

@@ -166,7 +166,7 @@ const DashboardModern: React.FC<DashboardProps> = ({ userRole }) => {
         },
         {
           title: 'Revenue',
-          value: `₹${statsData.revenue?.toLocaleString() || '0'}`,
+          value: `Rs ${statsData.revenue?.toLocaleString() || '0'}`,
           icon: CreditCard,
           color: 'from-orange-500 to-orange-600',
           bgColor: 'from-orange-50 to-orange-100',

@@ -133,7 +133,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ isOpen, onClose }) => {
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600">Total Amount</p>
-                <p className="font-bold text-lg">₹{booking.totalAmount}</p>
+                <p className="font-bold text-lg">Rs {booking.totalAmount}</p>
               </div>
             </div>
 

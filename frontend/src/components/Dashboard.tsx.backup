@@ -137,7 +137,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
         { title: 'Total Users', value: statsData.totalUsers?.toString() || '0', icon: Users, color: 'bg-gradient-to-r from-blue-500 to-blue-600' },
         { title: 'Active Trains', value: statsData.activeTrains?.toString() || '0', icon: Train, color: 'bg-gradient-to-r from-green-500 to-green-600' },
         { title: 'Today Bookings', value: statsData.todayBookings?.toString() || '0', icon: BookOpen, color: 'bg-gradient-to-r from-purple-500 to-purple-600' },
-        { title: 'Revenue', value: `₹${statsData.revenue?.toLocaleString() || '0'}`, icon: CreditCard, color: 'bg-gradient-to-r from-orange-500 to-orange-600' }
+        { title: 'Revenue', value: `Rs ${statsData.revenue?.toLocaleString() || '0'}`, icon: CreditCard, color: 'bg-gradient-to-r from-orange-500 to-orange-600' }
       ];
     } else if (userRole === 'passenger') {
       return [
@@ -722,7 +722,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
                           />
                         </div>
                         <div>
-                          <Label htmlFor={`${className}-price`} className="text-sm">Price (₹)</Label>
+                          <Label htmlFor={`${className}-price`} className="text-sm">Price (PKR)</Label>
                           <Input
                             id={`${className}-price`}
                             type="number"

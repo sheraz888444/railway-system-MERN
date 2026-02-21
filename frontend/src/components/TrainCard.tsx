@@ -54,7 +54,7 @@ const TrainCard: React.FC<TrainCardProps> = ({ train, onBook }) => {
               <p className="text-sm text-gray-600">Train #{train.number}</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-blue-600">₹{train.price}</p>
+              <p className="text-2xl font-bold text-blue-600">Rs {train.price}</p>
               <p className="text-sm text-gray-600">per person</p>
             </div>
           </div>
