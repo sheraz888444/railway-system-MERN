@@ -67,6 +67,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 // Health check
+app.get("/", (req, res) => {
+  res.send("Backend is running successfully 🚀");
+});
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Railway Reservation API is running' });
 });
