@@ -37,20 +37,20 @@ const Navbar: React.FC = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          <Link to="/" className="flex items-center space-x-3 group">
+        <div className="flex justify-between items-center h-16 sm:h-20">
+          <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group">
             <motion.div
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.5 }}
-              className="bg-gradient-to-r from-green-600 to-green-700 p-2 rounded-xl shadow-lg"
+              className="bg-gradient-to-r from-green-600 to-green-700 p-1.5 sm:p-2 rounded-lg sm:rounded-xl shadow-lg"
             >
-              <Train className="h-8 w-8 text-white" />
+              <Train className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
             </motion.div>
             <div>
-              <h1 className={`text-2xl font-bold ${isScrolled ? 'text-gray-900' : 'text-white'}`}>
+              <h1 className={`text-xl sm:text-2xl font-bold ${isScrolled ? 'text-gray-900' : 'text-white'}`}>
                 PakRail
               </h1>
-              <p className={`text-xs ${isScrolled ? 'text-gray-600' : 'text-white/80'}`}>
+              <p className={`text-[10px] sm:text-xs ${isScrolled ? 'text-gray-600' : 'text-white/80'}`}>
                 Pakistan Railways
               </p>
             </div>

@@ -21,15 +21,15 @@ const About: React.FC = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-br from-green-700 to-green-900 text-white">
+      <section className="pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 bg-gradient-to-br from-green-700 to-green-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-5xl font-bold mb-6">About PakRail</h1>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">About PakRail</h1>
+            <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto px-2">
               Your trusted partner for railway reservations across Pakistan. We are committed to making train travel accessible, convenient, and enjoyable for everyone.
             </p>
           </motion.div>
@@ -37,20 +37,20 @@ const About: React.FC = () => {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-12 sm:py-16 md:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="bg-white rounded-2xl p-8 shadow-lg"
+              className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg"
             >
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6">
-                <Target className="h-8 w-8 text-white" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                <Target className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h2>
-              <p className="text-gray-600 leading-relaxed">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Our Mission</h2>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 To revolutionize railway travel in Pakistan by providing a seamless, digital-first booking experience. We aim to connect every Pakistani to their destination with ease, comfort, and reliability.
               </p>
             </motion.div>
@@ -59,13 +59,13 @@ const About: React.FC = () => {
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="bg-white rounded-2xl p-8 shadow-lg"
+              className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg"
             >
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6">
-                <Globe className="h-8 w-8 text-white" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                <Globe className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h2>
-              <p className="text-gray-600 leading-relaxed">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Our Vision</h2>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 To become Pakistan's leading railway booking platform, known for innovation, customer satisfaction, and our contribution to sustainable transportation across the nation.
               </p>
             </motion.div>
@@ -74,19 +74,19 @@ const About: React.FC = () => {
       </section>
 
       {/* Values */}
-      <section className="py-20 bg-white">
+      <section className="py-12 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-10 sm:mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Values</h2>
-            <p className="text-xl text-gray-600">The principles that guide everything we do</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">Our Values</h2>
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 px-4">The principles that guide everything we do</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
             {[
               { icon: Heart, title: 'Customer First', description: 'Every decision we make puts our customers at the center.' },
               { icon: Shield, title: 'Trust & Security', description: 'Your data and transactions are always protected.' },
@@ -98,13 +98,13 @@ const About: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center p-8"
+                className="text-center p-4 sm:p-6 md:p-8"
               >
-                <div className="w-20 h-20 bg-gradient-to-r from-green-100 to-green-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <value.icon className="h-10 w-10 text-green-600" />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-green-100 to-green-200 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <value.icon className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h3>
-                <p className="text-gray-600">{value.description}</p>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">{value.title}</h3>
+                <p className="text-sm sm:text-base text-gray-600">{value.description}</p>
               </motion.div>
             ))}
           </div>
@@ -112,38 +112,38 @@ const About: React.FC = () => {
       </section>
 
       {/* Owner Details */}
-      <section className="py-20 bg-gradient-to-br from-green-700 to-green-900 text-white">
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-green-700 to-green-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4">Website Owner</h2>
-            <p className="text-xl text-white/90">Meet the person behind PakRail</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Website Owner</h2>
+            <p className="text-base sm:text-lg md:text-xl text-white/90 px-4">Meet the person behind PakRail</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="max-w-2xl mx-auto bg-white/10 backdrop-blur-sm rounded-2xl p-8"
+            className="max-w-2xl mx-auto bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-6 sm:p-8"
           >
             <div className="text-center">
-              <div className="w-24 h-24 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl font-bold text-white shadow-xl">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-3xl sm:text-4xl font-bold text-white shadow-xl">
                 SA
               </div>
-              <h3 className="text-2xl font-bold mb-2">Sheraz Ahmed</h3>
-              <p className="text-white/80 mb-6">Founder & Developer</p>
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">Sheraz Ahmed</h3>
+              <p className="text-sm sm:text-base text-white/80 mb-4 sm:mb-6">Founder & Developer</p>
               
-              <div className="space-y-4">
-                <a href="tel:+923267654138" className="flex items-center justify-center space-x-3 text-white/90 hover:text-white transition-colors">
-                  <Phone className="h-5 w-5" />
+              <div className="space-y-3 sm:space-y-4">
+                <a href="tel:+923267654138" className="flex items-center justify-center space-x-2 sm:space-x-3 text-white/90 hover:text-white transition-colors text-sm sm:text-base">
+                  <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>+92 326 7654138</span>
                 </a>
-                <a href="mailto:itssheraz78618@gmail.com" className="flex items-center justify-center space-x-3 text-white/90 hover:text-white transition-colors">
-                  <Mail className="h-5 w-5" />
+                <a href="mailto:itssheraz78618@gmail.com" className="flex items-center justify-center space-x-2 sm:space-x-3 text-white/90 hover:text-white transition-colors text-sm sm:text-base break-all">
+                  <Mail className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                   <span>itssheraz78618@gmail.com</span>
                 </a>
               </div>
@@ -153,31 +153,31 @@ const About: React.FC = () => {
       </section>
 
       {/* Privacy Policy Section */}
-      <section className="py-20 bg-gray-50" id="privacy-policy">
+      <section className="py-12 sm:py-16 md:py-20 bg-gray-50" id="privacy-policy">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Privacy Policy</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Privacy Policy</h2>
             
-            <div className="bg-white rounded-2xl shadow-lg p-8 space-y-8">
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-5 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
               <div>
-                <p className="text-gray-600 mb-4">
+                <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                   <strong>Last Updated:</strong> February 2026
                 </p>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                   This Privacy Policy describes how PakRail ("we", "us", or "our") collects, uses, and shares information about you when you use our website and services.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">1. Information We Collect</h3>
-                <p className="text-gray-600 leading-relaxed mb-4">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">1. Information We Collect</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-3 sm:mb-4">
                   We collect information you provide directly to us, including:
                 </p>
-                <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <ul className="list-disc list-inside text-sm sm:text-base text-gray-600 space-y-1 sm:space-y-2 ml-2 sm:ml-4">
                   <li>Name, email address, phone number when you create an account</li>
                   <li>Payment information when you make a booking</li>
                   <li>Travel preferences and booking history</li>
@@ -186,11 +186,11 @@ const About: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">2. How We Use Your Information</h3>
-                <p className="text-gray-600 leading-relaxed mb-4">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">2. How We Use Your Information</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-3 sm:mb-4">
                   We use the information we collect to:
                 </p>
-                <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <ul className="list-disc list-inside text-sm sm:text-base text-gray-600 space-y-1 sm:space-y-2 ml-2 sm:ml-4">
                   <li>Process your bookings and transactions</li>
                   <li>Send you booking confirmations and updates</li>
                   <li>Provide customer support</li>
@@ -201,11 +201,11 @@ const About: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">3. Cookies and Tracking Technologies</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">3. Cookies and Tracking Technologies</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                   We use cookies and similar tracking technologies to collect information about your browsing activities. This includes:
                 </p>
-                <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4 mt-4">
+                <ul className="list-disc list-inside text-sm sm:text-base text-gray-600 space-y-1 sm:space-y-2 ml-2 sm:ml-4 mt-3 sm:mt-4">
                   <li>Essential cookies required for the website to function</li>
                   <li>Analytics cookies to understand how visitors use our site</li>
                   <li>Advertising cookies to deliver relevant advertisements</li>
@@ -213,21 +213,21 @@ const About: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">4. Third-Party Advertising</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  We use Google AdSense to display advertisements on our website. Google AdSense uses cookies to serve ads based on your prior visits to our website or other websites. You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">Google Ads Settings</a>.
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">4. Third-Party Advertising</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                  We use Google AdSense to display advertisements on our website. Google AdSense uses cookies to serve ads based on your prior visits to our website or other websites. You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline break-words">Google Ads Settings</a>.
                 </p>
-                <p className="text-gray-600 leading-relaxed mt-4">
-                  Third-party vendors, including Google, use cookies to serve ads based on your visits to this and other websites. You can opt out of a third-party vendor's use of cookies for personalized advertising by visiting <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">www.aboutads.info</a>.
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed mt-3 sm:mt-4">
+                  Third-party vendors, including Google, use cookies to serve ads based on your visits to this and other websites. You can opt out of a third-party vendor's use of cookies for personalized advertising by visiting <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline break-words">www.aboutads.info</a>.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">5. Information Sharing</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">5. Information Sharing</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                   We do not sell your personal information. We may share your information with:
                 </p>
-                <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4 mt-4">
+                <ul className="list-disc list-inside text-sm sm:text-base text-gray-600 space-y-1 sm:space-y-2 ml-2 sm:ml-4 mt-3 sm:mt-4">
                   <li>Service providers who help us operate our platform</li>
                   <li>Payment processors for transaction processing</li>
                   <li>Law enforcement when required by law</li>
@@ -236,18 +236,18 @@ const About: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">6. Data Security</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">6. Data Security</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                   We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the Internet is 100% secure.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">7. Your Rights</h3>
-                <p className="text-gray-600 leading-relaxed mb-4">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">7. Your Rights</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-3 sm:mb-4">
                   You have the right to:
                 </p>
-                <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <ul className="list-disc list-inside text-sm sm:text-base text-gray-600 space-y-1 sm:space-y-2 ml-2 sm:ml-4">
                   <li>Access your personal information</li>
                   <li>Correct inaccurate data</li>
                   <li>Request deletion of your data</li>
@@ -257,28 +257,28 @@ const About: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">8. Children's Privacy</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">8. Children's Privacy</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                   Our services are not directed to children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">9. Changes to This Policy</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">9. Changes to This Policy</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                   We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">10. Contact Us</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">10. Contact Us</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                   If you have any questions about this Privacy Policy, please contact us at:
                 </p>
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <p className="text-gray-700"><strong>Sheraz Ahmed</strong></p>
-                  <p className="text-gray-600">Email: itssheraz78618@gmail.com</p>
-                  <p className="text-gray-600">Phone: +92 326 7654138</p>
+                <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm sm:text-base text-gray-700"><strong>Sheraz Ahmed</strong></p>
+                  <p className="text-sm sm:text-base text-gray-600 break-all">Email: itssheraz78618@gmail.com</p>
+                  <p className="text-sm sm:text-base text-gray-600">Phone: +92 326 7654138</p>
                 </div>
               </div>
             </div>
