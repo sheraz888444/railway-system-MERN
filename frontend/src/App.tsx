@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
 import Index from './pages/Index';
+import Home from './pages/Home';
+import About from './pages/About';
+import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import TicketDetails from './pages/TicketDetails';
@@ -21,13 +24,16 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-          <Route path="/abc" element={<Index />} />
-          <Route path="/" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard/*" element={<DashboardWrapper />} />
-          <Route path="/dashboard/my-bookings" element={<MyBookings />} />
-          <Route path="/ticket/:pnr" element={<TicketDetails />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/dashboard/*" element={<DashboardWrapper />} />
+            <Route path="/dashboard/my-bookings" element={<MyBookings />} />
+            <Route path="/ticket/:pnr" element={<TicketDetails />} />
+            <Route path="/old-index" element={<Index />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
