@@ -25,7 +25,7 @@ const sliderImages = [
     subtitle: 'Journey through the beautiful landscapes of Pakistan'
   },
   {
-    url: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=1920&q=80',
+    url: 'https://images.unsplash.com/photo-1560963689-d8e8b6118d09?w=1920&q=80',
     title: 'Book Your Tickets Online',
     subtitle: 'Fast, secure, and convenient booking system'
   },
@@ -317,7 +317,7 @@ const Home: React.FC = () => {
               className="grid grid-cols-2 gap-2 sm:gap-4 order-1 lg:order-2"
             >
               <img
-                src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&q=80"
+                src="https://images.unsplash.com/photo-1560963689-d8e8b6118d09?w=400&q=80"
                 alt="Pakistan Railways"
                 className="rounded-xl sm:rounded-2xl shadow-2xl w-full h-28 sm:h-36 md:h-48 object-cover"
               />

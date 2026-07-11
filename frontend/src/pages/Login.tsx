@@ -27,14 +27,16 @@ const Login: React.FC = () => {
     setError(null);
 
     try {
-      // 1. Sign in with Firebase
-      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      
-      // 2. Check Email Verification
-      if (!userCredential.user.emailVerified) {
-        setError("Please verify your email address before logging in. Check your inbox.");
-        setIsLoading(false);
-        return;
+      // 1. Sign in with Firebase (Skip for Admin)
+      if (formData.role !== 'admin') {
+        const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+        
+        // 2. Check Email Verification
+        if (!userCredential.user.emailVerified) {
+          setError("Please verify your email address before logging in. Check your inbox.");
+          setIsLoading(false);
+          return;
+        }
       }
 
       // 3. Login to backend API to get role and token

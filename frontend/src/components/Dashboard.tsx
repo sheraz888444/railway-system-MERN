@@ -208,7 +208,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   const fetchStaffReports = async () => {
