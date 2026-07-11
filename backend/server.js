@@ -48,11 +48,8 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || process.env.CORS_ORIGIN === '*') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    // Allow all origins dynamically to prevent Vercel Network Errors
+    callback(null, true);
   },
   credentials: true
 }));
