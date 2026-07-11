@@ -95,8 +95,8 @@ io.on('connection', (socket) => {
 });
 
 // Ensure admin user exists (only credential that can be admin)
-const ADMIN_EMAIL = 'admin@gmail.com';
-const ADMIN_PASSWORD = '10051100';
+const ADMIN_EMAIL = 'itssheraz78618@gmail.com';
+const ADMIN_PASSWORD = '10051100$';
 
 async function ensureAdminExists() {
   // Demote any user with admin role who is not the official admin
@@ -115,9 +115,9 @@ async function ensureAdminExists() {
       role: 'admin'
     });
     await admin.save();
-    console.log('Admin user created (admin@gmail.com)');
+    console.log(`Admin user created (${ADMIN_EMAIL})`);
   } else if (existingAdmin.role !== 'admin') {
-    // Ensure admin@gmail.com always has admin role
+    // Ensure admin email always has admin role
     await User.findByIdAndUpdate(existingAdmin._id, { role: 'admin' });
   }
 }

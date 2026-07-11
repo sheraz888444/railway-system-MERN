@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { authAPI } from '@/services/api';
+import { auth } from '../firebase/firebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -25,6 +27,17 @@ const Login: React.FC = () => {
     setError(null);
 
     try {
+      // 1. Sign in with Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      
+      // 2. Check Email Verification
+      if (!userCredential.user.emailVerified) {
+        setError("Please verify your email address before logging in. Check your inbox.");
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Login to backend API to get role and token
       const response = await authAPI.login(formData.email, formData.password);
 
       // Role validation
@@ -49,7 +62,7 @@ const Login: React.FC = () => {
     } catch (error: any) {
       toast({
         title: "Login Failed",
-        description: error.response?.data?.message || "Invalid credentials",
+        description: error.message || error.response?.data?.message || "Invalid credentials",
         variant: "destructive",
       });
     } finally {

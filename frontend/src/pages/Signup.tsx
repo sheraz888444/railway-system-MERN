@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { authAPI } from '@/services/api';
+import { auth } from '../firebase/firebaseConfig';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -24,20 +26,31 @@ const Signup: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await authAPI.register(formData);
+      // 1. Create User in Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      
+      // 2. Send Email Verification
+      await sendEmailVerification(userCredential.user);
+
+      // 3. Register user in backend (MongoDB)
+      await authAPI.register(formData);
+
+      // Explicit alert as requested
+      alert("Verification mail has sent tr,,please look at your inbox to verify your registeration");
 
       // Show success toast
       toast({
         title: "Registration Successful",
-        description: "Your account has been created successfully! Please sign in.",
+        description: "Account created! Please check your email to verify your account before logging in.",
       });
 
       // Navigate to login page
-      navigate('/');
+      navigate('/login');
     } catch (error: any) {
+      // If Firebase fails (e.g., email already in use), show error
       toast({
         title: "Registration Failed",
-        description: error.response?.data?.message || "Failed to create account",
+        description: error.message || error.response?.data?.message || "Failed to create account",
         variant: "destructive",
       });
     } finally {
