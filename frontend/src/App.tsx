@@ -11,6 +11,7 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import TicketDetails from './pages/TicketDetails';
+import VerificationMessage from './pages/VerificationMessage';
 import DashboardWrapper from './components/DashboardWrapper';
 import MyBookings from './components/MyBookings';
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/verify-email" element={<VerificationMessage />} />
             <Route path="/dashboard/*" element={<DashboardWrapper />} />
             <Route path="/dashboard/my-bookings" element={<MyBookings />} />
             <Route path="/ticket/:pnr" element={<TicketDetails />} />
